@@ -19,7 +19,6 @@ import java.util.logging.Logger;
  */
 public class BaseCommentaires {
     
-    /* Pwet */
 
     String path;
     ArrayList<ArrayList<String>> lignes = new ArrayList();
