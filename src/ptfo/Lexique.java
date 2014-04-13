@@ -26,7 +26,7 @@ public class Lexique {
 
     String path; // chemin vers le lexique, adresse du fichier
     ArrayList<ArrayList<String>> lignes = new ArrayList(); // 
-    ArrayList<String> colonnes = new ArrayList(); // a voir sui on peut s'en passer.
+    ArrayList<String> colonnes = new ArrayList(); // a voir si on peut s'en passer.
 
     
     Lexique(String path) {
@@ -48,7 +48,7 @@ public class Lexique {
             Logger.getLogger(Phrase.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
+    /* Regarde dans tout le tableau ligneS si contient le mot s */
     public boolean contient(String s) {
         for (int i = 0; i < lignes.size(); i++) {
             for (int j = 0; j < lignes.get(0).size(); j++) {
@@ -59,7 +59,11 @@ public class Lexique {
         }
         return false;
     }
-
+    
+    /* Regarde si tu as une coorespondance avec s dans lignes
+    * Uniquement si on veut un mot entouré d'autres mots (ex. Avdan Neova)
+    *
+    */
     public String correspond(String s) {
         String similaire = "";
         for (int i = 0; i < lignes.size(); i++) {
@@ -73,7 +77,10 @@ public class Lexique {
         }
         return similaire;
     }
-
+    
+    /* Renvoie un tableau d'indice int qui donne la colonne et la ligne de s
+    * dans le AL lignes 
+    */
     public int[] indiceDe(String s, int j) {
 
         int[] indices;
@@ -91,7 +98,9 @@ public class Lexique {
         //}
         return indices;
     }
-
+    /* 
+    *  va chercher si on mot a une ou plusieurs occurences
+    */
     public int occurenceDe(String s, int j) {
 
         int occur = 0;
@@ -108,7 +117,8 @@ public class Lexique {
         //}
         return occur;
     }
-
+    /* sert à récupérer les indices de chaque occurence d'un mot s
+    */
     public ArrayList allIndex(String s, int j) {
         ArrayList allind;
         allind = new ArrayList<>();
@@ -125,18 +135,20 @@ public class Lexique {
         }
         return null;
     }
-
+    /* recupere l'indice de la plus grande fréquence d'apparition*/
     public int mostFreq(String s, int j) {
         int mostfreq = 0;
         ArrayList allind = allIndex(s, j);
-        ArrayList<Double> freqs = new ArrayList<>();
+        ArrayList<Double> freqs;
+        freqs = new ArrayList<Double>();
         for (Object i : allind) {
             freqs.add(Double.parseDouble(lignes.get((int) i).get(7)));
         }
         mostfreq = (int) allind.get(0) + max(freqs);
         return mostfreq;
     }
-
+    
+    /* compare les frequences et retourne la max*/
     public int max(ArrayList<Double> a) {
         int maximum;
         maximum = 0;
@@ -148,7 +160,8 @@ public class Lexique {
         }
         return maximum;
     }
-
+    
+    /* renvoie l'indice du lemme le plus fréquent */
     public int getFreqLemme(String s) throws Exception {
         int ilemm = -1;
         if (contient(s)) {
@@ -160,7 +173,7 @@ public class Lexique {
         }
         return ilemm;
     }
-
+    /*renvoie le gram d'un mot*/
     String getGram(String mot, Lexique l) {
         String gram = "";
 
@@ -172,7 +185,7 @@ public class Lexique {
 
         return gram;
     }
-
+    /*sert a ecrire dans un fichier */
     void toFile(String newFile) throws IOException {
         File newfile = new File(newFile);
         PrintWriter out = new PrintWriter(new FileWriter(newfile));
@@ -180,7 +193,7 @@ public class Lexique {
 // Write each string in the array on a separate line  
         for (ArrayList<String> ligne : lignes) {
             for (String s : ligne) {
-                out.print(s + ',');
+                out.print(s + '\t');
             }
             out.print('\n');
 

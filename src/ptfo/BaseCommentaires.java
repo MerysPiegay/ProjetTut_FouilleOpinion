@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 public class BaseCommentaires {
     
-
+    /* meme chose qu'un lexique mais sans methode pour comparer a un lexique */
     String path;
     ArrayList<ArrayList<String>> lignes = new ArrayList();
     ArrayList<String> colonnes = new ArrayList();
