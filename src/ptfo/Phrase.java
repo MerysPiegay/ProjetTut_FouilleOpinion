@@ -8,7 +8,7 @@ package ptfo;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
+import java.util.regex.Pattern; // contient Pattern
 
 /**
  *
@@ -16,8 +16,8 @@ import java.util.regex.Pattern;
  */
 public class Phrase {
 
-    public String phrase;
-    String[] elements;
+    public String phrase; /* le commentaire dans sons ensemble*/
+    String[] elements; /* On ne peut pas faire un split sur un AL, ensemble de mots*/
     ArrayList<String> mots;
 
     Phrase(String s) {
@@ -37,7 +37,7 @@ public class Phrase {
 
     boolean detectNegation() {
         for (int i = 0; i < elements.length; i++) {
-            if (Pattern.matches("ne|pas|jamais|rien|aucun|aucune|n|impossible", elements[i])) {
+            if (Pattern.matches("ne|pas|jamais|rien|aucun|aucune|n|impossible", elements[i])) { // expression regulière
                 System.out.println("NEGATION DÉTÉCTÉE !!!!!!!!!!!!");
                 return true;
             }
@@ -45,7 +45,7 @@ public class Phrase {
         System.out.println("Aucune négation détéctée !");
         return false;
     }
-
+    /* Fais le contraire de split, met le contenu d'un AL dans un même string */
     String join(ArrayList<String> tab) {
         String joinstring = "";
         for (String s : tab) {
@@ -53,9 +53,10 @@ public class Phrase {
         }
         return joinstring;
     }
-
+    
+    /* change les mots du commentaire par le lemme correspondant le plus frequent */
     Phrase lemmatise() {
-        Lexique l = new Lexique("src/phrase/temp2.csv");
+        Lexique l = new Lexique("src/phrase/temp2.csv"); // récup de la phrase brute
         Lexique liste_pneus = new Lexique("src/phrase/pneus_sans_dup.csv");
         Phrase finalp = new Phrase("");
         for (String mot : mots) {
@@ -72,9 +73,11 @@ public class Phrase {
             }
         }
         finalp.phrase = finalp.join(finalp.mots);
-        return finalp;
+        return finalp; // renvoie la phrase lémmatisée
     }
-
+    /* Même utilisation que lemmatiser sauf qu'on récupère que les mots pertinents 
+    *
+    */
     Phrase simplifier() {
         Lexique l = new Lexique("src/phrase/temp2.csv");
         Lexique liste_pneus = new Lexique("src/phrase/pneus_sans_dup.csv");

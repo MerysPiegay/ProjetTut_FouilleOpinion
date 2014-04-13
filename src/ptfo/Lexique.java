@@ -24,10 +24,11 @@ import java.util.regex.Pattern;
  */
 public class Lexique {
 
-    String path;
-    ArrayList<ArrayList<String>> lignes = new ArrayList();
-    ArrayList<String> colonnes = new ArrayList();
+    String path; // chemin vers le lexique, adresse du fichier
+    ArrayList<ArrayList<String>> lignes = new ArrayList(); // 
+    ArrayList<String> colonnes = new ArrayList(); // a voir sui on peut s'en passer.
 
+    
     Lexique(String path) {
         String[] elements;
         this.path = path;
