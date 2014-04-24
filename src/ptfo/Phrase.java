@@ -85,7 +85,7 @@ public class Phrase {
         for (String mot : mots) {
             try {
                 String lemme = l.lignes.get(l.getFreqLemme(mot)).get(1);
-                String lemgram = l.getGram(lemme, l);
+                String lemgram = l.getGram(lemme);
                 if (lemgram.equalsIgnoreCase("NOM")
                         || lemgram.equalsIgnoreCase("ADJ")
                         || lemgram.equalsIgnoreCase("ADV")

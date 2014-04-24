@@ -224,11 +224,11 @@ public class Lexique {
         return ilemm;
     }
     /*renvoie le gram d'un mot*/
-    String getGram(String mot, Lexique l) {
+    String getGram(String mot) {
         String gram = "";
 
         try {
-            gram += l.lignes.get(l.getFreqLemme(mot)).get(3);
+            gram += lignes.get(getFreqLemme(mot)).get(3);
         } catch (Exception ex) {
 
         }
