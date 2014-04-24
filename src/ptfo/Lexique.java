@@ -20,7 +20,6 @@ public class Lexique {
     ArrayList<ArrayList<String>> lignes = new ArrayList(); // 
     ArrayList<String> colonnes = new ArrayList(); // a voir si on peut s'en passer.
 
-    
     Lexique(String path) {
         String[] elements;
         this.path = path;
@@ -41,6 +40,7 @@ public class Lexique {
         }
     }
     /* Regarde dans tout le tableau ligneS si contient le mot s */
+
     public boolean contient(String s) {
         for (int i = 0; i < lignes.size(); i++) {
             for (int j = 0; j < lignes.get(0).size(); j++) {
@@ -51,74 +51,76 @@ public class Lexique {
         }
         return false;
     }
-    
+
     /* Regarde si tu as une coorespondance avec s dans lignes
-    * Uniquement si on veut un mot entouré d'autres mots (ex. Avdan Neova)
-    *
-    */
+     * Uniquement si on veut un mot entouré d'autres mots (ex. Avdan Neova)
+     *
+     */
     public String correspond(String s) {
         String similaire = "";
         for (int i = 0; i < lignes.size(); i++) {
             for (int j = 0; j < lignes.get(0).size(); j++) {
-                Pattern p = Pattern.compile(".*"+s.toLowerCase()+".*");
+                Pattern p = Pattern.compile(".*" + s.toLowerCase() + ".*");
                 Matcher m = p.matcher(lignes.get(i).get(j).toLowerCase());
                 if (m.matches()) {
                     similaire += lignes.get(i).get(j) + " | ";
                 }
             }
         }
-        if (similaire.equals("")){
+        if (similaire.equals("")) {
             similaire = plusProche(s);
         }
         return similaire;
     }
-    
+
     /*Renvoi le mot le plus proche du string. (min de levenshtein)*/
-    public String plusProche(String s){
+    public String plusProche(String s) {
         String proche;
-        ArrayList tab; 
-        proche = "";
+        ArrayList tab;
         tab = new ArrayList<Integer>();
-        for(int i = 0; i<lignes.size();i++){
-            tab.add(levenshtein(s,lignes.get(i).get(0)));
+        for (int i = 0; i < lignes.size(); i++) {
+            if (Math.abs(lignes.get(i).get(0).length() - s.length()) <= 1) {
+
+                // if(Math.abs(lignes.get(i).get(0).length()-s.length())<1){
+                tab.add(levenshtein(s.toLowerCase(), lignes.get(i).get(0).toLowerCase()));
+                // }
+            } else {
+                tab.add(10000);
+            }
         }
-        proche = lignes.get(min(tab)).get(0);
+        //System.out.println(lignes.get(min(tab)).get(0));
+        proche = ((int) tab.get(min(tab)) > s.length() / 2 ? s : lignes.get(min(tab)).get(0));
+
         return proche;
     }
-    
+
     /*Renvoi la distance de levenshtein entre deux strings*/
-    public int levenshtein(String s, String p){
-        int distance;
-        distance = 0;
-        ArrayList a;
-        a = new ArrayList<Integer>();
-        int [][] tab;
-        tab = new int [s.length()+1][p.length()+1];
-        for (int i =0; i <= s.length(); i++){
+    public int levenshtein(String s, String p) {
+        // ArrayList a;
+        // a = new ArrayList<Integer>();
+        int[][] tab;
+        tab = new int[s.length() + 1][p.length() + 1];
+        for (int i = 0; i <= s.length(); i++) {
             tab[i][0] = i;
         }
-        for (int i =0; i <= p.length(); i++){
-            tab[0][i] = i;
+        for (int j = 0; j <= p.length(); j++) {
+            tab[0][j] = j;
         }
-        for (int i =1; i <= s.length(); i++){
-            for (int j =1; j <= p.length(); j++){
-                if (s.charAt(i-1) != p.charAt(j-1)) distance = 1;
-                else distance = 0;
-                a.add(tab[i-1][j] + 1);
-                a.add(tab[i][j-1] + 1);
-                a.add(tab[i-1][j-1] + distance);
-                tab[i][j] = (int) a.get(min(a));
-                 System.out.print(min(a)+" ");
+        for (int i = 1; i <= s.length(); i++) {
+            for (int j = 1; j <= p.length(); j++) {
+
+                tab[i][j] = Math.min(Math.min(tab[i - 1][j] + 1,
+                        tab[i][j - 1] + 1),
+                        tab[i - 1][j - 1] + ((s.charAt(i - 1) == p.charAt(j - 1)) ? 0 : 1));
             }
-                 System.out.println("");
 
         }
-        return tab[s.length()-1][p.length()-1];
+        return tab[s.length()][p.length()];
     }
-    
+
     /* Renvoie un tableau d'indice int qui donne la colonne et la ligne de s
-    * dans le AL lignes 
-    */
+     * dans le AL lignes 
+     */
     public int[] indiceDe(String s, int j) {
 
         int[] indices;
@@ -136,44 +138,27 @@ public class Lexique {
         //}
         return indices;
     }
-    /* 
-    *  va chercher si on mot a une ou plusieurs occurences
-    */
-    public int occurenceDe(String s, int j) {
 
-        int occur = 0;
-        for (int i = 0; i < lignes.size(); i++) {
-            //   for (int j = 0; j <= 10; j++) {
-            if (lignes.get(i).get(j).equalsIgnoreCase(s)) {
-                while (lignes.get(i).get(j).equalsIgnoreCase(s)) {
-                    occur++;
-                    i++;
-                }
-                return occur;
-            }
-        }
-        //}
-        return occur;
-    }
     /* sert à récupérer les indices de chaque occurence d'un mot s
-    */
+     */
     public ArrayList allIndex(String s, int j) {
         ArrayList allind;
         allind = new ArrayList<>();
-        if (this.occurenceDe(s, j) > 0) {
-            for (int i = 0; i < lignes.size(); i++) {
-                if (lignes.get(i).get(j).equalsIgnoreCase(s)) {
-                    while (lignes.get(i).get(j).equalsIgnoreCase(s)) {
-                        allind.add(i);
-                        i++;
-                    }
-                    return allind;
+
+        for (int i = 0; i < lignes.size(); i++) {
+            if (lignes.get(i).get(j).equalsIgnoreCase(s)) {
+                while (lignes.get(i).get(j).equalsIgnoreCase(s)) {
+                    allind.add(i);
+                    i++;
                 }
+                return allind;
             }
         }
+
         return null;
     }
     /* recupere l'indice de la plus grande fréquence d'apparition*/
+
     public int mostFreq(String s, int j) {
         int mostfreq = 0;
         ArrayList allind = allIndex(s, j);
@@ -185,7 +170,7 @@ public class Lexique {
         mostfreq = (int) allind.get(0) + max(freqs);
         return mostfreq;
     }
-    
+
     /* Renvoi l'indice du maximum dans un arraylist*/
     public int max(ArrayList<Double> a) {
         int maximum;
@@ -198,19 +183,19 @@ public class Lexique {
         }
         return maximum;
     }
-    
+
     /*Renvoi l'indice du minimum dans un arraylist*/
-    public int min(ArrayList<Integer> a){
+    public int min(ArrayList<Integer> a) {
         int minimum;
         minimum = 0;
-        for (int i = 1; i <a.size(); i++){
-            if (a.get(minimum) > a.get(i)){
+        for (int i = 1; i < a.size(); i++) {
+            if (a.get(minimum) > a.get(i)) {
                 minimum = i;
             }
         }
         return minimum;
     }
-    
+
     /* renvoie l'indice du lemme le plus fréquent */
     public int getFreqLemme(String s) throws Exception {
         int ilemm = -1;
@@ -224,6 +209,7 @@ public class Lexique {
         return ilemm;
     }
     /*renvoie le gram d'un mot*/
+
     String getGram(String mot) {
         String gram = "";
 
@@ -236,6 +222,7 @@ public class Lexique {
         return gram;
     }
     /*sert a ecrire dans un fichier */
+
     void toFile(String newFile) throws IOException {
         File newfile = new File(newFile);
         PrintWriter out = new PrintWriter(new FileWriter(newfile));
@@ -252,7 +239,7 @@ public class Lexique {
 
     public static void main(String[] args) throws IOException {
         Lexique l = new Lexique("src/ptfo/pneus_sans_dup.csv");
-        System.out.println(l.correspond("ADVNA"));
-        
+        System.out.println(l.correspond("T/a KO"));
+
     }
 }
