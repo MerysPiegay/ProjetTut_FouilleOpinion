@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ptfo;
 
 import java.io.File;
@@ -17,11 +12,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.lang.Math;
 
-/**
- *
- * @author eyepop
- */
 public class Lexique {
 
     String path; // chemin vers le lexique, adresse du fichier
@@ -68,14 +60,60 @@ public class Lexique {
         String similaire = "";
         for (int i = 0; i < lignes.size(); i++) {
             for (int j = 0; j < lignes.get(0).size(); j++) {
-                Pattern p = Pattern.compile(".* "+s.toLowerCase()+" .*");
+                Pattern p = Pattern.compile(".*"+s.toLowerCase()+".*");
                 Matcher m = p.matcher(lignes.get(i).get(j).toLowerCase());
                 if (m.matches()) {
                     similaire += lignes.get(i).get(j) + " | ";
                 }
             }
         }
+        if (similaire.equals("")){
+            similaire = plusProche(s);
+        }
         return similaire;
+    }
+    
+    /*Renvoi le mot le plus proche du string. (min de levenshtein)*/
+    public String plusProche(String s){
+        String proche;
+        ArrayList tab; 
+        proche = "";
+        tab = new ArrayList<Integer>();
+        for(int i = 0; i<lignes.size();i++){
+            tab.add(levenshtein(s,lignes.get(i).get(0)));
+        }
+        proche = lignes.get(min(tab)).get(0);
+        return proche;
+    }
+    
+    /*Renvoi la distance de levenshtein entre deux strings*/
+    public int levenshtein(String s, String p){
+        int distance;
+        distance = 0;
+        ArrayList a;
+        a = new ArrayList<Integer>();
+        int [][] tab;
+        tab = new int [s.length()+1][p.length()+1];
+        for (int i =0; i <= s.length(); i++){
+            tab[i][0] = i;
+        }
+        for (int i =0; i <= p.length(); i++){
+            tab[0][i] = i;
+        }
+        for (int i =1; i <= s.length(); i++){
+            for (int j =1; j <= p.length(); j++){
+                if (s.charAt(i-1) != p.charAt(j-1)) distance = 1;
+                else distance = 0;
+                a.add(tab[i-1][j] + 1);
+                a.add(tab[i][j-1] + 1);
+                a.add(tab[i-1][j-1] + distance);
+                tab[i][j] = (int) a.get(min(a));
+                 System.out.print(min(a)+" ");
+            }
+                 System.out.println("");
+
+        }
+        return tab[s.length()-1][p.length()-1];
     }
     
     /* Renvoie un tableau d'indice int qui donne la colonne et la ligne de s
@@ -148,7 +186,7 @@ public class Lexique {
         return mostfreq;
     }
     
-    /* compare les frequences et retourne la max*/
+    /* Renvoi l'indice du maximum dans un arraylist*/
     public int max(ArrayList<Double> a) {
         int maximum;
         maximum = 0;
@@ -159,6 +197,18 @@ public class Lexique {
             }
         }
         return maximum;
+    }
+    
+    /*Renvoi l'indice du minimum dans un arraylist*/
+    public int min(ArrayList<Integer> a){
+        int minimum;
+        minimum = 0;
+        for (int i = 1; i <a.size(); i++){
+            if (a.get(minimum) > a.get(i)){
+                minimum = i;
+            }
+        }
+        return minimum;
     }
     
     /* renvoie l'indice du lemme le plus fréquent */
@@ -201,8 +251,8 @@ public class Lexique {
     }
 
     public static void main(String[] args) throws IOException {
-        Lexique l = new Lexique("src/phrase/pneus_sans_dup.csv");
-        System.out.println(l.correspond("KM2"));
+        Lexique l = new Lexique("src/ptfo/pneus_sans_dup.csv");
+        System.out.println(l.correspond("ADVNA"));
         
     }
 }
