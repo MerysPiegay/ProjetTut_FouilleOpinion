@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
 import java.lang.Math;
 
 public class Lexique {
+    
+    /* Test de push avec le ptut*/
 
     String path; // chemin vers le lexique, adresse du fichier
     ArrayList<ArrayList<String>> lignes = new ArrayList(); // 
