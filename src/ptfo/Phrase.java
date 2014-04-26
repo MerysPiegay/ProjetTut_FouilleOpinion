@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package ptfo;
 
 import java.util.*;
@@ -10,10 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern; // contient Pattern
 
-/**
- *
- * @author eyepop
- */
+
 public class Phrase {
 
     public String phrase; /* le commentaire dans sons ensemble*/
@@ -29,9 +22,6 @@ public class Phrase {
         phrase = join(mots);
     }
 
-    /**
-     * @param args the command line arguments
-     */
     @Override
     public String toString() {
         return phrase;
