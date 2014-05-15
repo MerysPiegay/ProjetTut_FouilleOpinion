@@ -9,7 +9,7 @@ import java.util.regex.Pattern; // contient Pattern
 
 public class Phrase {
 
-    public String phrase; /* le commentaire dans sons ensemble*/
+    public String phrase; /* le commentaire dans son ensemble*/
 
     String[] elements; /* On ne peut pas faire un split sur un AL, ensemble de mots*/
 
