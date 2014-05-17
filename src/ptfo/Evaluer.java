@@ -6,30 +6,19 @@ import java.sql.Statement;
 
 public class Evaluer {
 
-    String userid;
-    String password;
-    String URL;
-    java.sql.Connection conn;
     Double ratio;
     Classifier classifieur;
 
     Evaluer() throws SQLException {
-        userid = "p1306440";
-        password = "191847";
-        URL = "jdbc:oracle:thin:@iuta.univ-lyon1.fr:1521:orcl";
-        conn = java.sql.DriverManager.getConnection(URL, userid, password);
-        java.sql.DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-        if (conn != null) {
-            System.out.println("Connexion établie");
-        } else {
-            System.out.println("Connexion échouée");
-        }
+ 
         classifieur = new Classifier();
     }
 
     public Double getRatio() throws SQLException {
+        Connection co;
+        co=new Connection();
         Statement lanceRequete1;
-        lanceRequete1 = conn.createStatement();
+        lanceRequete1 = co.conn.createStatement();
         ResultSet requete1;
         requete1 = lanceRequete1.executeQuery("select * from RCOMMENTAIRE");
         Double total=0.;

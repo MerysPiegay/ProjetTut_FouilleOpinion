@@ -1,37 +1,23 @@
 package ptfo;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Iterator;
 
 public class Classifier {
 
-    String userid;
-    String password;
-    String URL;
-    java.sql.Connection conn;
-
     Classifier() throws SQLException {
-        userid = "p1306440";
-        password = "191847";
-        URL = "jdbc:oracle:thin:@iuta.univ-lyon1.fr:1521:orcl";
-        conn = java.sql.DriverManager.getConnection(URL, userid, password);
-        java.sql.DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-        if (conn != null) {
-            System.out.println("Connexion établie");
-        } else {
-            System.out.println("Connexion échouée");
-        }
+
     }
 
     int classifier(Phrase p) throws SQLException {
+        Connection co;
+        co = new Connection();
         int classe = 0;
         for (String mot : p.mots) {
             mot = mot.toLowerCase();
             Statement lanceRequete1;
-            lanceRequete1 = conn.createStatement();
+            lanceRequete1 = co.conn.createStatement();
             ResultSet requete1;
             requete1 = lanceRequete1.executeQuery("select * from LEXIQUE where MOT = '"
                     + mot + "' and FREQLEMFILM = (select Max(FREQLEMFILM) from LEXIQUE where MOT = '"
@@ -39,14 +25,14 @@ public class Classifier {
             while (requete1.next()) {
                 //System.out.println(requete1.getString("LEMME"));
                 Statement lanceRequete2;
-                lanceRequete2 = conn.createStatement();
+                lanceRequete2 = co.conn.createStatement();
                 ResultSet requete2;
                 mot = requete1.getString("LEMME");
                 if (mot.length() > 1) {
                     requete2 = lanceRequete2.executeQuery("select * from MOTS where LEMME = '" + mot + "'");
                     requete2.next();
                     Statement lanceRequete2_1;
-                    lanceRequete2_1 = conn.createStatement();
+                    lanceRequete2_1 = co.conn.createStatement();
                     ResultSet requete2_1;
                     requete2_1 = lanceRequete2_1.executeQuery("select count(ID_LEMME) from MOTS where LEMME = '" + mot + "'");
                     requete2_1.next();
