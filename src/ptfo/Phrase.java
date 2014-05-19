@@ -15,7 +15,7 @@ public class Phrase {
 
     Phrase(String s) {
         phrase = s;
-        elements = phrase.split("[ .,'?!]");
+        elements = phrase.split("[ .,'?!/]");
         mots = new ArrayList((Arrays.asList(elements)));
         phrase = join(mots);
     }
@@ -27,7 +27,7 @@ public class Phrase {
 
     boolean detectNegation() {
         for (int i = 0; i < elements.length; i++) {
-            if (Pattern.matches("ne|pas|jamais|rien|aucun|aucune|n|impossible|loin d'?tre", elements[i])) { // expression regulière
+            if (Pattern.matches("ne|pas|jamais|rien|aucun|aucune|sans|n|impossible|loin d'?tre", elements[i])) { // expression regulière
                 System.out.println("NEGATION DÉTÉCTÉE !!!!!!!!!!!!");
                 return true;
             }

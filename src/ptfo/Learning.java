@@ -59,6 +59,9 @@ public class Learning {
                             System.out.println("_________________ " + rate + " ___________________________");
 
                             PreparedStatement reqins;
+                            /*if(phrase.detectNegation()){
+                                //rate*=-1;
+                            }*/
                             reqins = co.conn.prepareStatement("update MOTS set CLASSE = " + rate + ", OCCUR = OCCUR + 1 where LEMME = " + "'" + requete1.getString("LEMME") + "'");
                             /*      reqins.setInt(1, rate);
                              reqins.setInt(2, 1);

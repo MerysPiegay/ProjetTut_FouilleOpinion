@@ -16,7 +16,7 @@ public class Evaluer {
 
     public Double getRatio() throws SQLException {
         Connection co;
-        co=new Connection();
+        co=new Connection();    
         Statement lanceRequete1;
         lanceRequete1 = co.conn.createStatement();
         ResultSet requete1;

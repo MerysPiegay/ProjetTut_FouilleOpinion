@@ -37,9 +37,11 @@ public class Classifier {
                     requete2_1 = lanceRequete2_1.executeQuery("select count(ID_LEMME) from MOTS where LEMME = '" + mot + "'");
                     requete2_1.next();
                     if (requete2_1.getInt(1) != 0
-                            && Math.abs((double) (requete2.getInt("CLASSE")) / (double) requete2.getInt("OCCUR")) >= .5) {
+                            && Math.abs((double) (requete2.getInt("CLASSE")) / (double) requete2.getInt("OCCUR")) >= .5
+                            && requete2.getString("LEMME").length() > 1
+                            && requete2.getInt("OCCUR") > 3) {
                         System.out.println("\t" + ((double) (requete2.getInt("CLASSE")) / (double) requete2.getInt("OCCUR")));
-                        classe += requete2.getInt("CLASSE");
+                        classe += requete2.getInt("CLASSE")*requete2.getInt("OCCUR");
                     }
                     requete2.close();
                     lanceRequete2.close();
@@ -60,7 +62,7 @@ public class Classifier {
         Classifier l;
         l = new Classifier();
         Commentaire c;
-        c = new Commentaire("bons");
+        c = new Commentaire("c'est bon ");
         int classe = 0;
         for (String p : c.phrases) {
             classe += l.classifier(new Phrase(p));
