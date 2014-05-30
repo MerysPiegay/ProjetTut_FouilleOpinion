@@ -1,9 +1,7 @@
-
 package ptfo;
 
 import java.util.*;
 import java.util.regex.Pattern; // contient Pattern
-
 
 public class Phrase {
 
@@ -27,9 +25,17 @@ public class Phrase {
 
     boolean detectNegation() {
         for (int i = 0; i < elements.length; i++) {
-            if (Pattern.matches("ne|pas|jamais|rien|aucun|aucune|sans|n|impossible|loin d'?tre", elements[i])) { // expression regulière
+            if (Pattern.matches("ne|pas|jamais|rien|aucun|aucune|sans|n|impossible", elements[i])) { // expression regulière
                 System.out.println("NEGATION DÉTÉCTÉE !!!!!!!!!!!!");
                 return true;
+            } else {
+                if(i<elements.length-2){
+                if (Pattern.matches("loin", elements[i])
+                        && Pattern.matches("d", elements[i + 1])
+                        && Pattern.matches("être", elements[i + 2])) {
+                    System.out.println("NEGATION DÉTÉCTÉE !!!!!!!!!!!!");
+                    return true;
+                }}
             }
         }
         System.out.println("Aucune négation détéctée !");
@@ -99,6 +105,8 @@ public class Phrase {
     }
 
     public static void main(String[] args) {
-
+        Phrase p = new Phrase("ces pneus sont loin d'être les meilleurs");
+        System.out.println(p.phrase);
+        p.detectNegation();
     }
 }

@@ -17,10 +17,10 @@ public class Learning {
         Statement lanceRequete;
         lanceRequete = co.conn.createStatement();
         ResultSet requete;
-        requete = lanceRequete.executeQuery("select * from RCOMMENTAIRE");
+        requete = lanceRequete.executeQuery("select * from PHRASE");
         while (requete.next()) {
             Phrase phrase;
-            phrase = new Phrase(requete.getString("RCOMMENT"));
+            phrase = new Phrase(requete.getString("PHRASE"));
             //System.out.println(phrase.mots);
 
             for (String mot : phrase.mots) {
@@ -31,50 +31,51 @@ public class Learning {
                     ResultSet requete1;
                     requete1 = lanceRequete1.executeQuery("select * from LEXIQUE where MOT = '"
                             + mot + "' and FREQLEMFILM = (select Max(FREQLEMFILM) from LEXIQUE where MOT = '"
-                            + mot + "' and (CGRAM = 'NOM' or CGRAM = 'VER' or CGRAM = 'ADV' or CGRAM = 'ADJ') ) ");
+                            + mot + "') and (CGRAM = 'NOM' or CGRAM = 'VER' or CGRAM = 'ADV' or CGRAM = 'ADJ')  ");
                     while (requete1.next()) {
                         Statement lanceRequete2;
                         lanceRequete2 = co.conn.createStatement();
                         ResultSet requete2;
                         mot = requete1.getString("LEMME");
-                        requete2 = lanceRequete2.executeQuery("select * from MOTS where LEMME = '" + mot + "'");
+                        if (!(mot.equals("être")||mot.equals("avoir"))) {
+                            requete2 = lanceRequete2.executeQuery("select * from MOTS where LEMME = '" + mot + "'");
 
-                        Statement lanceRequete2_1;
-                        lanceRequete2_1 = co.conn.createStatement();
-                        ResultSet requete2_1;
+                            Statement lanceRequete2_1;
+                            lanceRequete2_1 = co.conn.createStatement();
+                            ResultSet requete2_1;
 
-                        requete2_1 = lanceRequete2_1.executeQuery("select count(ID_LEMME) from MOTS where LEMME = '" + mot + "'");
-                        requete2_1.next();
-                        System.out.println("|||||||||" + requete2_1.getInt(1));
-                        if (requete2_1.getInt(1) == 0) {
-                            System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-                            Statement lanceRequete3;
-                            lanceRequete3 = co.conn.createStatement();
-                            lanceRequete3.executeUpdate("insert into MOTS " + "values ((select count(ID_LEMME)from MOTS),'" + requete1.getString("LEMME") + "'," + requete.getInt("RATE") + ",1)");
-                            lanceRequete3.close();
-                        } else {
-                            requete2.next();
+                            requete2_1 = lanceRequete2_1.executeQuery("select count(ID_LEMME) from MOTS where LEMME = '" + mot + "'");
+                            requete2_1.next();
+                            System.out.println("|||||||||" + requete2_1.getInt(1));
+                            if (requete2_1.getInt(1) == 0) {
+                                System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+                                Statement lanceRequete3;
+                                lanceRequete3 = co.conn.createStatement();
+                                lanceRequete3.executeUpdate("insert into MOTS " + "values ((select count(ID_LEMME)from MOTS),'" + requete1.getString("LEMME") + "'," + requete.getInt("CLASSE") + ",1)");
+                                lanceRequete3.close();
+                            } else {
+                                requete2.next();
 
-                            int rate = requete2.getInt("CLASSE") + requete.getInt("RATE");
-                            System.out.println("_________________ " + rate + " ___________________________");
+                                int rate = requete2.getInt("CLASSE") + requete.getInt("CLASSE");
+                                System.out.println("_________________ " + rate + " ___________________________");
 
-                            PreparedStatement reqins;
-                            /*if(phrase.detectNegation()){
-                                //rate*=-1;
-                            }*/
-                            reqins = co.conn.prepareStatement("update MOTS set CLASSE = " + rate + ", OCCUR = OCCUR + 1 where LEMME = " + "'" + requete1.getString("LEMME") + "'");
-                            /*      reqins.setInt(1, rate);
-                             reqins.setInt(2, 1);
-                             reqins.setString(3, "'" + requete1.getString("LEMME") + "'");
-                             */ reqins.executeUpdate();
-                            reqins.close();
+                                PreparedStatement reqins;
+                                /*if(phrase.detectNegation()){
+                                 //rate*=-1;
+                                 }*/
+                                reqins = co.conn.prepareStatement("update MOTS set CLASSE = " + rate + ", OCCUR = OCCUR + 1 where LEMME = " + "'" + requete1.getString("LEMME") + "'");
+                                /*      reqins.setInt(1, rate);
+                                 reqins.setInt(2, 1);
+                                 reqins.setString(3, "'" + requete1.getString("LEMME") + "'");
+                                 */ reqins.executeUpdate();
+                                reqins.close();
 
+                            }
+                            requete2.close();
+                            lanceRequete2.close();
+                            requete2_1.close();
+                            lanceRequete2_1.close();
                         }
-                        requete2.close();
-                        lanceRequete2.close();
-                        requete2_1.close();
-                        lanceRequete2_1.close();
-
                     }
                     requete1.close();
                     lanceRequete1.close();

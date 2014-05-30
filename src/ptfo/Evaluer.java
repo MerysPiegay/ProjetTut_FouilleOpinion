@@ -20,7 +20,7 @@ public class Evaluer {
         Statement lanceRequete1;
         lanceRequete1 = co.conn.createStatement();
         ResultSet requete1;
-        requete1 = lanceRequete1.executeQuery("select * from RCOMMENTAIRE");
+        requete1 = lanceRequete1.executeQuery("select * from RCOMMENTAIRE_BACKUP");
         Double total=0.;
         Double ok=0.;
         while (requete1.next()) {

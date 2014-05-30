@@ -13,11 +13,13 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.lang.Math;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class Lexique {
-    
-    /* Test de push avec le ptut*/
 
+    /* Test de push avec le ptut*/
     String path; // chemin vers le lexique, adresse du fichier
     ArrayList<ArrayList<String>> lignes = new ArrayList(); // 
     ArrayList<String> colonnes = new ArrayList(); // a voir si on peut s'en passer.
@@ -239,9 +241,14 @@ public class Lexique {
         }
     }
 
-    public static void main(String[] args) throws IOException {
-        Lexique l = new Lexique("src/ptfo/pneus_sans_dup.csv");
-        System.out.println(l.correspond("T/a KO"));
-
+    public static void main(String[] args) throws IOException, SQLException {
+        Connection co;
+        co = new Connection();
+        Statement lanceRequete1;
+        lanceRequete1 = co.conn.createStatement();
+        ResultSet requete1;
+        requete1 = lanceRequete1.executeQuery("select * from LEXIQUE where mot = ''");
+        System.out.println(requete1.next());            
+        
     }
 }

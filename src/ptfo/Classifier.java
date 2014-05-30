@@ -6,11 +6,14 @@ import java.sql.Statement;
 
 public class Classifier {
 
-    Classifier() throws SQLException {
+    boolean pertinent;
 
+    Classifier() throws SQLException {
+        pertinent = false;
     }
 
     int classifier(Phrase p) throws SQLException {
+        int cptpertinent = 0;
         Connection co;
         co = new Connection();
         int classe = 0;
@@ -21,7 +24,9 @@ public class Classifier {
             ResultSet requete1;
             requete1 = lanceRequete1.executeQuery("select * from LEXIQUE where MOT = '"
                     + mot + "' and FREQLEMFILM = (select Max(FREQLEMFILM) from LEXIQUE where MOT = '"
-                    + mot + "' and (CGRAM = 'NOM' or CGRAM = 'VER' or CGRAM = 'ADV' or CGRAM = 'ADJ') ) ");
+                    + mot + "' )and (CGRAM = 'NOM' "
+                    //+ "or CGRAM = 'VER' "
+                    + "or CGRAM = 'ADV' or CGRAM = 'ADJ')  ");
             while (requete1.next()) {
                 //System.out.println(requete1.getString("LEMME"));
                 Statement lanceRequete2;
@@ -41,7 +46,15 @@ public class Classifier {
                             && requete2.getString("LEMME").length() > 1
                             && requete2.getInt("OCCUR") > 3) {
                         System.out.println("\t" + ((double) (requete2.getInt("CLASSE")) / (double) requete2.getInt("OCCUR")));
-                        classe += requete2.getInt("CLASSE")*requete2.getInt("OCCUR");
+                        classe += requete2.getInt("CLASSE") * requete2.getInt("OCCUR");
+                    }
+                    if (requete2_1.getInt(1) != 0) {
+                        cptpertinent++;
+                        System.out.println("pertinent");
+
+                    } else {
+                        cptpertinent--;
+                        System.out.println("pas pertinent");
                     }
                     requete2.close();
                     lanceRequete2.close();
@@ -51,10 +64,13 @@ public class Classifier {
             }
             requete1.close();
             lanceRequete1.close();
+            System.out.println(cptpertinent + " ____ " + mot);
         }
+
         if (p.detectNegation()) {
             classe *= -1;
         }
+        pertinent = (cptpertinent >= 0);
         return classe;
     }
 
@@ -62,12 +78,13 @@ public class Classifier {
         Classifier l;
         l = new Classifier();
         Commentaire c;
-        c = new Commentaire("c'est bon ");
+        c = new Commentaire("je suis fortement content des ces pneus");
         int classe = 0;
         for (String p : c.phrases) {
             classe += l.classifier(new Phrase(p));
         }
         System.out.println(classe);
+        System.out.println(l.pertinent);
 
     }
 }
