@@ -7,6 +7,7 @@ public class Commentaire {
 
     ArrayList<String> phrases;
     String[] elements;
+    
     Commentaire(String commentaire) {
         elements = commentaire.split("[.?!]|[, ]mais[, ]|[, ]certes[, ]|[, ]par contre[, ]|[, ]en revanche[, ]|[, ]néanmoins[, ]|[, ]neanmoins |[, ]bien que[, ]");
         phrases = new ArrayList((Arrays.asList(elements)));
