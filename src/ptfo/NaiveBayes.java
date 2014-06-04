@@ -28,7 +28,7 @@ public class NaiveBayes {
        * Va calculer le nombre de commentaires positifs, négatifs et neutres
        * @throws SQLException 
        */
-      void recupereNbrComm() throws SQLException {
+      public void recupereNbrComm() throws SQLException {
             Statement lanceRequete1;
             lanceRequete1 = co1.conn.createStatement();
             ResultSet requete1;
@@ -55,7 +55,7 @@ public class NaiveBayes {
        * @param classePhrase
        * @throws SQLException 
        */
-      void apprentissageMots(Phrase phraseNB, int classePhrase) throws SQLException {
+      public void apprentissageMots(Phrase phraseNB, int classePhrase) throws SQLException {
 
                   for (String s : phraseNB.mots) {
                         Statement lanceRequete2, lanceRequete3, lanceRequete4;
@@ -69,13 +69,13 @@ public class NaiveBayes {
 
                               switch (classePhrase) {
                                     case -1:
-                                          lanceRequete4.executeUpdate("insert into MOTSNB values (" + (requete3.getInt(1) + 1) + "," + s + ",1,0,1,0 ");
+                                          lanceRequete4.executeUpdate("insert into MOTSNB values (" + (requete3.getInt(0) + 1) + "," + s + ",1,0,1,0 ");
                                           break;
                                     case 0:
-                                          lanceRequete4.executeUpdate("insert into MOTSNB values (" + (requete3.getInt(1) + 1) + "," + s + ",1,0,0,1 ");
+                                          lanceRequete4.executeUpdate("insert into MOTSNB values (" + (requete3.getInt(0) + 1) + "," + s + ",1,0,0,1 ");
                                           break;
                                     case 1:
-                                          lanceRequete4.executeUpdate("insert into MOTSNB values (" + (requete3.getInt(1) + 1) + "," + s + ",1,1,0,0 ");
+                                          lanceRequete4.executeUpdate("insert into MOTSNB values (" + (requete3.getInt(0) + 1) + "," + s + ",1,1,0,0 ");
                                           break;
                                     default:
                                           System.out.println("Problème dans le insert / switch de apprentissageMots() ");
@@ -109,15 +109,19 @@ public class NaiveBayes {
        * Va permettre de noter la première fois tous les mots
        * @throws SQLException 
        */
-      void premierApprentissageMots() throws SQLException{
+      public void premierApprentissageMots() throws SQLException{
             Statement lanceRequetePhrase;
             lanceRequetePhrase = co1.conn.createStatement();
             ResultSet requetePhrase;
             requetePhrase = lanceRequetePhrase.executeQuery("select * from PHRASE");
-            Phrase phrase;
-            phrase = new Phrase (requetePhrase.getString("PHRASE"));
-            int classePhrase = requetePhrase.getInt("CLASSE");
-            apprentissageMots(phrase, classePhrase);
+            while(requetePhrase.next()){
+                  Phrase phrase;
+                  phrase = new Phrase (requetePhrase.getString("PHRASE"));
+                  int classePhrase = requetePhrase.getInt("CLASSE");
+                  apprentissageMots(phrase, classePhrase);
+            }
+            requetePhrase.close();
+            lanceRequetePhrase.close();
       }
 
       /**
@@ -127,7 +131,7 @@ public class NaiveBayes {
        * @param phraseNote
        * @throws SQLException
        */
-      void recupereNbrOccur(Phrase phraseNote) throws SQLException {
+       public void recupereNbrOccur(Phrase phraseNote) throws SQLException {
             Statement lanceRequeteOccur;
             lanceRequeteOccur = co1.conn.createStatement();
             ResultSet requeteOccur;
@@ -147,38 +151,74 @@ public class NaiveBayes {
       }
       
       /**
-       * Va calculer la fameuse note NB
+       * Va calculer la fameuse note NB positive
        * @param phrase
        * @return
        * @throws SQLException 
        */
-      float calculNoteNB(Phrase phrase) throws SQLException{
-            
+      public float calculNoteNBPositif(Phrase phrase) throws SQLException{
             float noteNB;
             recupereNbrOccur(phrase);
             recupereNbrComm();
-            noteNB = (occPosit/occNeg)*(commPosit/commTot);
+            noteNB = (occPosit/occTotal)*(commPosit/commTot);
             return noteNB;
+      }
+      
+      /**
+       * Va calculer la version NB négative
+       * @param phrase
+       * @return
+       * @throws SQLException 
+       */
+       public float calculNoteNBNegatif(Phrase phrase) throws SQLException{ 
+            float noteNB;
+            recupereNbrOccur(phrase);
+            recupereNbrComm();
+            noteNB = (occNeg/occTotal)*(commNegat/commTot);
+            return noteNB;
+      }
+      /**
+       * Mise à jou de toute une phrase avec mise à jour des mots dedans et update de la table phrase.
+       * @param phrase
+       * @throws SQLException 
+       */
+      public void miseAJourPhrase(Phrase phrase) throws SQLException{
+            int classe;
+            Statement lanceRequeteMaJ, lanceRequeteID;
+            lanceRequeteMaJ = co1.conn.createStatement();
+            lanceRequeteID = co1.conn.createStatement();
+            ResultSet requeteID;
+            requeteID = lanceRequeteID.executeQuery("select max(ID_PHRASE) from PHRASE_TEST");
+            requeteID.next();
+            classe = calculNoteNBPositif(phrase)>=0.5 ?1:0;
+            if (classe ==0 && calculNoteNBNegatif(phrase)>=0.5) classe = -1;
+            
+            lanceRequeteMaJ.executeUpdate("insert into PHRASE_TEST values ("+(requeteID.getInt(0)+1)+","+phrase+","+classe+",?,?");
+           // penser à remplacer les deux ? mais pour le moment pas besoin
+            requeteID.close();
+            lanceRequeteID.close();
+            lanceRequeteMaJ.close();
+            
+            apprentissageMots(phrase, classe);
       }
 
       /**
-       * Va noter tout un commentaire rentrer en argument
+       * Va noter tout un commentaire rentré en argument
        *
        * @param comment
        * @throws SQLException
        */
-      void notationCommentaire(Commentaire comment) throws SQLException {
-            
-            note = 0;
+     public void notationCommentaire(Commentaire comment) throws SQLException {
+            /*note = 0;
             Statement lanceRequetePhrase;
-            lanceRequetePhrase = co1.conn.createStatement();
+            lanceRequetePhrase = co1.conn.createStatement();*/
             
             for (String s : comment.phrases) {
-                  Phrase phraseDecoupe;
-                  phraseDecoupe = new Phrase(s);
-                  note = calculNoteNB(phraseDecoupe);
-                  lanceRequetePhrase.executeUpdate("insert into PHRASE_TEST");
+                  Phrase phrase = new Phrase(s);
+                  miseAJourPhrase(phrase);
             }
+            
+            /*lanceRequetePhrase.close();*/
       }
 
       /**
