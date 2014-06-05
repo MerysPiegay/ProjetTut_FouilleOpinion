@@ -85,12 +85,13 @@ public class CommentaireManip {
                         Statement lanceRequete4_0;
                         lanceRequete4_0 = conn.createStatement();
                         ResultSet requete4_0;
-                        requete4_0 = lanceRequete4_0.executeQuery("select max(ID_PHRASE) from PHRASE");
+                        requete4_0 = lanceRequete4_0.executeQuery("select max(ID_PHRASE) from PHRASE_BACKUP");
                         requete4_0.next();
                         int id = requete4_0.getInt(1) + 1;
                         lanceRequete4_0.close();
                         requete4_0.close();
-                        update = lanceRequete4.executeUpdate("INSERT INTO PHRASE"
+                        update = lanceRequete4.executeUpdate("INSERT INTO PHRASE_BACKUP"
+                                + ""
                                 + " VALUES("
                                 + id
                                 + ",'" + phrase + "',"
