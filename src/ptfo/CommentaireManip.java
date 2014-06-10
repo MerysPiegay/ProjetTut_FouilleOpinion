@@ -110,8 +110,7 @@ public class CommentaireManip {
                         lanceRequete5.setInt(2, requete.getInt("ID_POSTE"));
                         String update2 = "update COMMENTAIRE SET CLASSE='np' where ID_POSTE =? ";
                         lanceRequete6 = conn.prepareStatement(update2);
-                        lanceRequete6.setString(1, String.valueOf(total));
-                        lanceRequete6.setInt(2, requete.getInt("ID_POSTE"));
+                        lanceRequete6.setInt(1, requete.getInt("ID_POSTE"));
                         if (pertinent) {
                               lanceRequete5.executeUpdate();
                         } else {

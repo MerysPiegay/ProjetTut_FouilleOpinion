@@ -7,7 +7,6 @@ package ptfo;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.PreparedStatement;
 
 /**
@@ -32,18 +31,23 @@ public class NaiveBayes {
        * @throws SQLException
        */
       public void recupereNbrComm() throws SQLException {
-            Statement lanceRequete1;
-            lanceRequete1 = co1.conn.createStatement();
+            PreparedStatement lanceRequete1;
+            String selectCount = "select count(PHRASE) from PHRASE_NB where CLASSE >=?";
+            String selectCountTotal = "select count(PHRASE) from PHRASE_NB";
+            lanceRequete1 = co1.conn.prepareStatement(selectCount);
             ResultSet requete1;
 
             // récupération des CT et CP.
-            requete1 = lanceRequete1.executeQuery("select count(PHRASE) from PHRASE_BACKUP where CLASSE >= 1");
+            lanceRequete1.setInt(1, 1);
+            requete1 = lanceRequete1.executeQuery();
             requete1.next();
             commPosit = requete1.getInt(1);
-            requete1 = lanceRequete1.executeQuery("select count(PHRASE) from PHRASE_BACKUP where CLASSE >= -1");
+            lanceRequete1.setInt(1, -1);
+            requete1 = lanceRequete1.executeQuery();
             requete1.next();
             commNegat = requete1.getInt(1);
-            requete1 = lanceRequete1.executeQuery("select count(PHRASE) from PHRASE_BACKUP");
+            lanceRequete1 = co1.conn.prepareStatement(selectCountTotal);
+            requete1 = lanceRequete1.executeQuery();
             requete1.next();
             commTot = requete1.getInt(1);
             requete1.close();
@@ -58,21 +62,22 @@ public class NaiveBayes {
        * @throws SQLException
        */
       public void recupereNbrOccur(String s) throws SQLException {
-            Statement lanceRequeteOccur;
-            lanceRequeteOccur = co1.conn.createStatement();
+            PreparedStatement lanceRequeteOccur;
+            String selectMot ="select * from MOTSNB where MOTS=?" ;
+            lanceRequeteOccur = co1.conn.prepareStatement(selectMot);
+            lanceRequeteOccur.setString(1,s);
             ResultSet requeteOccur;
             occPosit = 0;
             occNeg = 0;
             occTotal = 0;
 
-            requeteOccur = lanceRequeteOccur.executeQuery("select * from MOTSNB where MOTS='" + s + "'");
+            requeteOccur = lanceRequeteOccur.executeQuery();
             if (requeteOccur.next()) {
                   occPosit = (float) requeteOccur.getInt("OCCUR_POSITIF");
                   occNeg = (float) requeteOccur.getInt("OCCUR_NEGATIF");
                   occTotal = (float) requeteOccur.getInt("OCCUR_TOTAL");
             }
             requeteOccur.close();
-
             lanceRequeteOccur.close();
       }
 
@@ -91,78 +96,91 @@ public class NaiveBayes {
                   motsDejaFait = new Phrase("");
                   if (!s.equals("") && !motsDejaFait.mots.contains(s)) {
                         s = s.toLowerCase();
-                        Statement lanceRequete2, lanceRequete3, lanceRequete4;
-                        lanceRequete2 = co1.conn.createStatement();
-                        lanceRequete3 = co1.conn.createStatement();
-                        ResultSet requete2, requete3;
-                        requete2 = lanceRequete2.executeQuery("select * from MOTSNB where MOTS = '" + s + "'");
-                        requete3 = lanceRequete3.executeQuery("select max(ID) from MOTSNB");
-                        requete3.next();
-                        PreparedStatement ajoutMot;
-                        ajoutMot = co1.conn.prepareStatement("insert into MOTSNB values (?,?,1,?,?,? )");
-                        PreparedStatement insertMot;
-                        insertMot = co1.conn.prepareStatement("update MOTSNB_TEST set OCCUR_TOTAL = OCCUR_TOTAL+1, OCCUR_NEGATIF = OCCUR_NEGATIF+1 where MOTS=?");
-                        if (!requete2.next()) {
+                        PreparedStatement lanceRequeteAll = null;
+                        PreparedStatement lanceRequeteID = null;
+                        String selectAll = "select * from MOTSNB where MOTS =?";
+                        lanceRequeteAll = co1.conn.prepareStatement(selectAll);
+                        lanceRequeteAll.setString(1, s);
+                        String selectID = "select max(ID) from MOTSNB";
+                        lanceRequeteID = co1.conn.prepareStatement(selectID);
+                        ResultSet requeteAll, requeteID;
+                        requeteID = lanceRequeteID.executeQuery();
+                        requeteID.next();
+                        int ID = requeteID.getInt(1) + 1;
+                        requeteAll = lanceRequeteAll.executeQuery();
+                        if (!requeteAll.next()) {
+                              PreparedStatement ajoutMot;
+                              String ajout;
+                              ajout = "insert into MOTSNB values (?,?,1,?,?,? )";
+                              ajoutMot = co1.conn.prepareStatement(ajout);
                               switch (classePhrase) {
                                     case -1:
-                                          ajoutMot.setInt(1, requete3.getInt(1) + 1);
+                                          ajoutMot.setInt(1, ID);
                                           ajoutMot.setString(2, s);
                                           ajoutMot.setInt(3, 0);
                                           ajoutMot.setInt(4, 1);
                                           ajoutMot.setInt(5, 0);
-                                          ajoutMot.executeUpdate();
                                           break;
                                     case 0:
-                                          ajoutMot.setInt(1, requete3.getInt(1) + 1);
+                                          ajoutMot.setInt(1, ID);
                                           ajoutMot.setString(2, s);
                                           ajoutMot.setInt(3, 0);
                                           ajoutMot.setInt(4, 0);
                                           ajoutMot.setInt(5, 1);
-                                          ajoutMot.executeUpdate();
                                           break;
                                     case 1:
-                                          ajoutMot.setInt(1, requete3.getInt(1) + 1);
+                                          ajoutMot.setInt(1, ID);
                                           ajoutMot.setString(2, s);
                                           ajoutMot.setInt(3, 1);
                                           ajoutMot.setInt(4, 0);
                                           ajoutMot.setInt(5, 0);
-                                          ajoutMot.executeUpdate();
                                           break;
                                     default:
                                           System.out.println("Problème dans le insert / switch de apprentissageMots() ");
                                           break;
                               }
+                              ajoutMot.executeUpdate();
                               motsDejaFait.mots.add(s);
                               System.out.println(s);
                               ajoutMot.close();
                         } else {
                               if (!motsDejaFait.mots.contains(s)) {
+                                    PreparedStatement insertMot;
+                                    String insert = "update MOTSNB set OCCUR_TOTAL = OCCUR_TOTAL+1, OCCUR_NEGATIF = OCCUR_NEGATIF+?,OCCUR_NEUTRE = OCCUR_NEUTRE +?, OCCUR_POSITIF =OCCUR_POSITIF+? where MOTS=?";
+                                    insertMot = co1.conn.prepareStatement(insert);
                                     switch (classePhrase) {
                                           case -1:
-                                                insertMot.setString(1, s);
-                                                insertMot.executeUpdate();
+                                                insertMot.setInt(1, 1);
+                                                insertMot.setInt(2, 0);
+                                                insertMot.setInt(3, 0);
+                                                insertMot.setString(4, s);
                                                 break;
                                           case 0:
-                                                insertMot.setString(1, s);
-                                                insertMot.executeUpdate();
+                                                insertMot.setInt(1, 0);
+                                                insertMot.setInt(2, 1);
+                                                insertMot.setInt(3, 0);
+                                                insertMot.setString(4, s);
                                                 break;
                                           case 1:
-                                                insertMot.setString(1, s);
-                                                insertMot.executeUpdate();
+                                                insertMot.setInt(1, 0);
+                                                insertMot.setInt(2, 0);
+                                                insertMot.setInt(3, 1);
+                                                insertMot.setString(4, s);
                                                 break;
                                           default:
                                                 System.out.println("Problème dans le update / switch de apprentissageMots() ");
                                                 break;
                                     }
+                                    insertMot.executeUpdate();
+                                    insertMot.close();
                               }
                               motsDejaFait.mots.add(s);
                               System.out.println(s);
-                              insertMot.close();
                         }
-                        requete2.close();
-                        lanceRequete2.close();
-                        requete3.close();
-                        lanceRequete3.close();
+                        requeteAll.close();
+                        lanceRequeteAll.close();
+                        requeteID.close();
+                        lanceRequeteID.close();
                   }
             }
       }
@@ -184,12 +202,11 @@ public class NaiveBayes {
                         ResultSet requeteAll, requeteID;
                         requeteID = lanceRequeteID.executeQuery();
                         requeteID.next();
-                        int ID = requeteID.getInt(1)+1;
+                        int ID = requeteID.getInt(1) + 1;
                         requeteAll = lanceRequeteAll.executeQuery();
                         if (!requeteAll.next()) {
                               PreparedStatement ajoutMot;
-                              String ajout;
-                              ajout = "insert into MOTSNB_TEST values (?,?,1,?,?,? )";
+                              String ajout = "insert into MOTSNB_TEST values (?,?,1,?,?,? )";
                               ajoutMot = co1.conn.prepareStatement(ajout);
                               switch (classePhrase) {
                                     case -1:
@@ -200,14 +217,14 @@ public class NaiveBayes {
                                           ajoutMot.setInt(5, 0);
                                           break;
                                     case 0:
-                                          ajoutMot.setInt(1, ID + 1);
+                                          ajoutMot.setInt(1, ID);
                                           ajoutMot.setString(2, s);
                                           ajoutMot.setInt(3, 0);
                                           ajoutMot.setInt(4, 0);
                                           ajoutMot.setInt(5, 1);
                                           break;
                                     case 1:
-                                          ajoutMot.setInt(1, ID + 1);
+                                          ajoutMot.setInt(1, ID);
                                           ajoutMot.setString(2, s);
                                           ajoutMot.setInt(3, 1);
                                           ajoutMot.setInt(4, 0);
@@ -269,10 +286,11 @@ public class NaiveBayes {
        * @throws SQLException
        */
       public void premierApprentissageMots() throws SQLException {
-            Statement lanceRequetePhrase;
-            lanceRequetePhrase = co1.conn.createStatement();
+            PreparedStatement lanceRequetePhrase;
+            String selectPhrase = "select * from PHRASE_NB";
+            lanceRequetePhrase = co1.conn.prepareStatement(selectPhrase);
             ResultSet requetePhrase;
-            requetePhrase = lanceRequetePhrase.executeQuery("select * from PHRASE_BACKUP");
+            requetePhrase = lanceRequetePhrase.executeQuery();
             while (requetePhrase.next()) {
                   Phrase phrase;
                   phrase = new Phrase(requetePhrase.getString("PHRASE"));
@@ -343,11 +361,11 @@ public class NaiveBayes {
        */
       public void miseAJourPhrase(Phrase phrase) throws SQLException {
             int classe;
-            Statement lanceRequeteID;
-            lanceRequeteID = co1.conn.createStatement();
-
+            PreparedStatement lanceRequeteID;
+            String selectMaxID = "select max(ID_PHRASE) from PHRASE_NB_TEST";
+            lanceRequeteID = co1.conn.prepareStatement(selectMaxID);
             ResultSet requeteID;
-            requeteID = lanceRequeteID.executeQuery("select max(ID_PHRASE) from PHRASE_TEST");
+            requeteID = lanceRequeteID.executeQuery();
             requeteID.next();
             int ID = requeteID.getInt(1) + 1;
             //classe = calculNoteNBPositif(phrase) >= 0.5 ? 1 : 0;
@@ -364,7 +382,8 @@ public class NaiveBayes {
             }
             System.out.println(noteNbPos > noteNbNeg ? "\n\n\t\t\t\t CLASSE POSITIVE" : "\t\t\t\t CLASSE NEGATIVE\n\n");
             PreparedStatement maj;
-            maj = co1.conn.prepareStatement("insert into PHRASE_TEST values (?,?,?,0,?,?)");
+            String insertPhraseTest = "insert into PHRASE_NB_TEST values (?,?,?,0,?,?)";
+            maj = co1.conn.prepareStatement(insertPhraseTest);
             maj.setInt(1, ID);
             maj.setString(2, phrase.phrase);
             maj.setInt(3, classe);
@@ -402,21 +421,22 @@ public class NaiveBayes {
       public static void main(String[] args) throws SQLException {
             NaiveBayes nb;
             nb = new NaiveBayes();
-            nb.premierApprentissageMots();
-            /*
-             Statement lanceRequeteTest;
-             lanceRequeteTest = nb.co1.conn.createStatement();
-             ResultSet requeteTest;
-             requeteTest = lanceRequeteTest.executeQuery("select * from PHRASE_BACKUP");
-             int i = 0;
-             while (requeteTest.next() && i <= 5) {
-             Phrase phraseDeTest;
-             phraseDeTest = new Phrase(requeteTest.getString("PHRASE"));
-             nb.miseAJourPhrase(phraseDeTest);
-             i++;
-             //phraseDeTest = new Phrase("Ce pneu est super dangereux");
-             System.out.println(phraseDeTest);
-             }*/
+            //nb.premierApprentissageMots();
+
+            PreparedStatement lanceRequeteTest;
+            String selectPhraseBackup = "select * from PHRASE_NB_BACKUP";
+            lanceRequeteTest = nb.co1.conn.prepareStatement(selectPhraseBackup);
+            ResultSet requeteTest;
+            requeteTest = lanceRequeteTest.executeQuery();
+            int i = 0;
+            while (requeteTest.next() && i <= 5) {
+                  Phrase phraseDeTest;
+                  phraseDeTest = new Phrase(requeteTest.getString("PHRASE"));
+                  System.out.println(phraseDeTest);
+                  nb.miseAJourPhrase(phraseDeTest);
+                  i++;
+                  //phraseDeTest = new Phrase("Ce pneu est super dangereux");
+            }
 
       }
 
