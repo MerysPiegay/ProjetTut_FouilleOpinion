@@ -1,50 +1,50 @@
-,adhérence,0
-,amortir,0
-,amortissement,0
-,autoroute,0
-,berline,0
-,choc,0
-,comportement,0
-,comporter,0
-,courbe,0
-,déplacement,0
-,déplacer,0
-,distance,0
-,enneiger,0
-,flanc,0
-,freinage,0
-,humide,0
-,longévité,0
-,monte,0
-,monture,0
-,mouiller,0
-,piste,0
-,pluie,0
-,pneu,0
-,pneumatique,0
-,pression,0
-,prix,0
-,produit,0
-,qualité,0
-,roue,0
-,rouler,0
-,route,0
-,routier,0
-,sportif,0
-,traction,0
-,usure,0
-,vibration,0
-,virage,0
-,vitesse,0
-,voiture,0
-,camionnette,0
-,chausser,0
-,compacte,0
-,monospace,0
-,SUV,0
-,performance,0
-,neige,0
-,boue,0
-,sécurité,0
-,roadster,0
-,épingle,0
+1	adhérence
+2	amortir
+3	amortissement
+4	autoroute
+5	berline
+6	choc
+7	comportement
+8	comporter
+9	courbe
+10	déplacement
+11	déplacer
+12	distance
+13	enneiger
+14	flanc
+15	freinage
+16	humide
+17	longévité
+18	monte
+19	monture
+20	mouiller
+21	piste
+22	pluie
+23	pneu
+24	pneumatique
+25	pression
+26	prix
+27	produit
+28	qualité
+29	roue
+30	rouler
+31	route
+32	routier
+33	sportif
+34	traction
+35	usure
+36	vibration
+37	virage
+38	vitesse
+39	voiture
+40	camionnette
+41	chausser
+42	compacte
+43	monospace
+44	SUV
+45	performance
+46	neige
+47	boue
+48	sécurité
+49	roadster
+50	épingle
