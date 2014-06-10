@@ -96,7 +96,7 @@ public class Classifier {
                         + mot + "' )and (CGRAM = 'NOM' "
                         //+ "or CGRAM = 'VER' "
                         + "or CGRAM = 'ADV' or CGRAM = 'ADJ')  ");
-                while (requete1.next()) {
+                if (requete1.next()) {
                     //System.out.println(requete1.getString("LEMME"));
                     Statement lanceRequete2;
                     lanceRequete2 = co.conn.createStatement();
@@ -104,25 +104,30 @@ public class Classifier {
                     mot = requete1.getString("LEMME");
                     if (mot.length() > 1) {
                         requete2 = lanceRequete2.executeQuery("select * from MOTS where LEMME = '" + mot + "'");
-                        requete2.next();
-                        Statement lanceRequete2_1;
-                        lanceRequete2_1 = co.conn.createStatement();
-                        ResultSet requete2_1;
-                        requete2_1 = lanceRequete2_1.executeQuery("select count(ID_LEMME) from MOTS where LEMME = '" + mot + "'");
-                        requete2_1.next();
-                        if (requete2_1.getInt(1) != 0
-                                && Math.abs((double) (requete2.getInt("CLASSE")) / (double) requete2.getInt("OCCUR")) >= .01
-                                && requete2.getString("LEMME").length() > 1
-                                && requete2.getInt("OCCUR") > 3) {
-                            System.out.println("\t" + ((double) (requete2.getInt("CLASSE")) / (double) requete2.getInt("OCCUR")));
-                            classe += requete2.getInt("CLASSE") * requete2.getInt("OCCUR");
-                        }
+                        if (requete2.next()) {
+                            Statement lanceRequete2_1;
+                            lanceRequete2_1 = co.conn.createStatement();
+                            ResultSet requete2_1;
+                            requete2_1 = lanceRequete2_1.executeQuery("select count(ID_LEMME) from MOTS where LEMME = '" + mot + "'");
+                            requete2_1.next();
+                            if (requete2_1.getInt(1) != 0
+                                    && Math.abs((double) (requete2.getInt("CLASSE")) / (double) requete2.getInt("OCCUR")) >= .01
+                                    && requete2.getString("LEMME").length() > 1
+                                    && requete2.getInt("OCCUR") > 3) {
+                                System.out.println("\t" + ((double) (requete2.getInt("CLASSE")) / (double) requete2.getInt("OCCUR")));
+                                classe += requete2.getInt("CLASSE") * requete2.getInt("OCCUR");
+                            }
 
-                        requete2.close();
-                        lanceRequete2.close();
-                        requete2_1.close();
-                        lanceRequete2_1.close();
+                            requete2.close();
+                            lanceRequete2.close();
+                            requete2_1.close();
+                            lanceRequete2_1.close();
+                        } else {
+                            System.out.println("Le mot " + mot + " est inconnu");
+                        }
                     }
+                } else {
+                    System.out.println("Le mot " + mot + " est inconnu");
                 }
                 requete1.close();
                 lanceRequete1.close();
@@ -142,7 +147,7 @@ public class Classifier {
         Classifier l;
         l = new Classifier();
         Commentaire c;
-        c = new Commentaire("très");
+        c = new Commentaire("pneu est super merdique");
         int classe = 0;
         for (String p : c.phrases) {
             classe += l.classifier(new Phrase(p));
