@@ -13,7 +13,8 @@ public class Phrase {
 
     Phrase(String s) {
         phrase = s;
-        elements = phrase.split("[ .\",\'=!/():;_?]"); // MODIF : ajout des parenthèses
+        //elements = phrase.split("\\+"); 
+        elements = phrase.split("[ .\",\'=!/():;_?\\+\\-%*$€¿¡]"); // MODIF : ajout des parenthèses
         mots = new ArrayList((Arrays.asList(elements)));
         phrase = join(mots);
     }
@@ -105,7 +106,7 @@ public class Phrase {
     }
 
     public static void main(String[] args) {
-        Phrase p = new Phrase("ces pneus sont loin d'être les meilleurs");
+        Phrase p = new Phrase("ces pneus sont loin%d'être les-meilleurs");
         System.out.println(p.phrase);
         p.detectNegation();
     }
