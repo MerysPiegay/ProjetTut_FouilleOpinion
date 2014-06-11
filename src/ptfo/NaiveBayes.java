@@ -63,9 +63,9 @@ public class NaiveBayes {
        */
       public void recupereNbrOccur(String s) throws SQLException {
             PreparedStatement lanceRequeteOccur;
-            String selectMot ="select * from MOTSNB where MOTS=?" ;
+            String selectMot = "select * from MOTSNB where MOTS=?";
             lanceRequeteOccur = co1.conn.prepareStatement(selectMot);
-            lanceRequeteOccur.setString(1,s);
+            lanceRequeteOccur.setString(1, s);
             ResultSet requeteOccur;
             occPosit = 0;
             occNeg = 0;
@@ -96,8 +96,9 @@ public class NaiveBayes {
                   motsDejaFait = new Phrase("");
                   if (!s.equals("") && !motsDejaFait.mots.contains(s)) {
                         s = s.toLowerCase();
-                        PreparedStatement lanceRequeteAll = null;
-                        PreparedStatement lanceRequeteID = null;
+                        System.out.println(s);
+                        PreparedStatement lanceRequeteAll;
+                        PreparedStatement lanceRequeteID;
                         String selectAll = "select * from MOTSNB where MOTS =?";
                         lanceRequeteAll = co1.conn.prepareStatement(selectAll);
                         lanceRequeteAll.setString(1, s);
@@ -110,8 +111,7 @@ public class NaiveBayes {
                         requeteAll = lanceRequeteAll.executeQuery();
                         if (!requeteAll.next()) {
                               PreparedStatement ajoutMot;
-                              String ajout;
-                              ajout = "insert into MOTSNB values (?,?,1,?,?,? )";
+                              String ajout = "insert into MOTSNB values (?,?,1,?,?,? )";
                               ajoutMot = co1.conn.prepareStatement(ajout);
                               switch (classePhrase) {
                                     case -1:
@@ -141,7 +141,6 @@ public class NaiveBayes {
                               }
                               ajoutMot.executeUpdate();
                               motsDejaFait.mots.add(s);
-                              System.out.println(s);
                               ajoutMot.close();
                         } else {
                               if (!motsDejaFait.mots.contains(s)) {
@@ -175,7 +174,6 @@ public class NaiveBayes {
                                     insertMot.close();
                               }
                               motsDejaFait.mots.add(s);
-                              System.out.println(s);
                         }
                         requeteAll.close();
                         lanceRequeteAll.close();
@@ -192,8 +190,9 @@ public class NaiveBayes {
                   motsDejaFait = new Phrase("");
                   if (!s.equals("") && !motsDejaFait.mots.contains(s)) {
                         s = s.toLowerCase();
-                        PreparedStatement lanceRequeteAll = null;
-                        PreparedStatement lanceRequeteID = null;
+                        System.out.println(s);
+                        PreparedStatement lanceRequeteAll;
+                        PreparedStatement lanceRequeteID;
                         String selectAll = "select * from MOTSNB_TEST where MOTS =?";
                         lanceRequeteAll = co1.conn.prepareStatement(selectAll);
                         lanceRequeteAll.setString(1, s);
@@ -236,7 +235,6 @@ public class NaiveBayes {
                               }
                               ajoutMot.executeUpdate();
                               motsDejaFait.mots.add(s);
-                              System.out.println(s);
                               ajoutMot.close();
                         } else {
                               if (!motsDejaFait.mots.contains(s)) {
@@ -270,7 +268,6 @@ public class NaiveBayes {
                                     insertMot.close();
                               }
                               motsDejaFait.mots.add(s);
-                              System.out.println(s);
                         }
                         requeteAll.close();
                         lanceRequeteAll.close();
@@ -295,8 +292,8 @@ public class NaiveBayes {
                   Phrase phrase;
                   phrase = new Phrase(requetePhrase.getString("PHRASE"));
                   int classePhrase = requetePhrase.getInt("CLASSE");
-                  //apprentissageMots(phrase, classePhrase);
-                  apprentissageMotsTest(phrase, classePhrase);
+                  apprentissageMots(phrase, classePhrase);
+                  //apprentissageMotsTest(phrase, classePhrase);
             }
             requetePhrase.close();
             lanceRequetePhrase.close();
@@ -368,15 +365,10 @@ public class NaiveBayes {
             requeteID = lanceRequeteID.executeQuery();
             requeteID.next();
             int ID = requeteID.getInt(1) + 1;
-            //classe = calculNoteNBPositif(phrase) >= 0.5 ? 1 : 0;
             float noteNbPos = calculNoteNBPositif(phrase);
             float noteNbNeg = calculNoteNBNegatif(phrase);
             if (noteNbPos != noteNbNeg) {
-                  if (noteNbPos > noteNbNeg) {
-                        classe = 1;
-                  } else {
-                        classe = -1;
-                  }
+                  classe = noteNbPos > noteNbNeg ? 1 : -1;
             } else {
                   classe = 0;
             }
@@ -417,6 +409,7 @@ public class NaiveBayes {
 
       /**
        * @param args the command line arguments
+       * @throws java.sql.SQLException
        */
       public static void main(String[] args) throws SQLException {
             NaiveBayes nb;
@@ -437,7 +430,6 @@ public class NaiveBayes {
                   i++;
                   //phraseDeTest = new Phrase("Ce pneu est super dangereux");
             }
-
       }
 
 }
