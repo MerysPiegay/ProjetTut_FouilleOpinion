@@ -3,15 +3,23 @@ package ptfo;
 import java.util.*;
 import java.util.regex.Pattern; // contient Pattern
 
+/**
+ *
+ * @author MerysPIEGAY
+ */
 public class Phrase {
 
     public String phrase; /* le commentaire dans son ensemble*/
 
-    String[] elements; /* On ne peut pas faire un split sur un AL, ensemble de mots*/
+    public String[] elements; /* On ne peut pas faire un split sur un AL, ensemble de mots*/
 
-    ArrayList<String> mots;
+    public ArrayList<String> mots;
 
-    Phrase(String s) {
+    /**
+     *
+     * @param s
+     */
+    public Phrase(String s) {
         phrase = s;
         //elements = phrase.split("\\+"); 
         elements = phrase.split("[ .\",\'=!/():;_?\\+\\-%*$€¿¡]"); // MODIF : ajout des parenthèses
@@ -24,19 +32,24 @@ public class Phrase {
         return phrase;
     }
 
-    boolean detectNegation() {
+    /**
+     *
+     * @return
+     */
+    public boolean detectNegation() {
         for (int i = 0; i < elements.length; i++) {
             if (Pattern.matches("ne|pas|jamais|rien|aucun|aucune|sans|n|impossible", elements[i])) { // expression regulière
                 System.out.println("NEGATION DÉTÉCTÉE !!!!!!!!!!!!");
                 return true;
             } else {
-                if(i<elements.length-2){
-                if (Pattern.matches("loin", elements[i])
-                        && Pattern.matches("d", elements[i + 1])
-                        && Pattern.matches("être", elements[i + 2])) {
-                    System.out.println("NEGATION DÉTÉCTÉE !!!!!!!!!!!!");
-                    return true;
-                }}
+                if (i < elements.length - 2) {
+                    if (Pattern.matches("loins?", elements[i])
+                            && Pattern.matches("d", elements[i + 1])
+                            && Pattern.matches("être", elements[i + 2])) {
+                        System.out.println("NEGATION DÉTÉCTÉE !!!!!!!!!!!!");
+                        return true;
+                    }
+                }
             }
         }
         System.out.println("Aucune négation détéctée !");
@@ -44,7 +57,12 @@ public class Phrase {
     }
     /* Fais le contraire de split, met le contenu d'un AL dans un même string */
 
-    String join(ArrayList<String> tab) {
+    /**
+     *
+     * @param tab
+     * @return
+     */
+    public String join(ArrayList<String> tab) {
         String joinstring = "";
         for (String s : tab) {
             joinstring += s + " ";
@@ -53,7 +71,13 @@ public class Phrase {
     }
 
     /* change les mots du commentaire par le lemme correspondant le plus frequent */
-    Phrase lemmatise() {
+
+    /**
+     *
+     * @return
+     */
+    
+    public Phrase lemmatise() {
         Lexique l = new Lexique("src/ptfo/temp2.csv"); // récup de la phrase brute
         Lexique liste_pneus = new Lexique("src/ptfo/pneus_sans_dup.csv");
         Phrase finalp = new Phrase("");
@@ -77,7 +101,11 @@ public class Phrase {
      *
      */
 
-    Phrase simplifier() {
+    /**
+     *
+     * @return
+     */
+    public Phrase simplifier() {
         Lexique l = new Lexique("src/ptfo/temp2.csv");
         Lexique liste_pneus = new Lexique("src/ptfo/pneus_sans_dup.csv");
         Phrase finalp = new Phrase("");
@@ -106,8 +134,9 @@ public class Phrase {
     }
 
     public static void main(String[] args) {
-        Phrase p = new Phrase("ces pneus sont loin%d'être les-meilleurs");
+        Phrase p = new Phrase("ces pneus sont loins d être les meilleurs, et sont assez mauvais");
         System.out.println(p.phrase);
         p.detectNegation();
+        
     }
 }
