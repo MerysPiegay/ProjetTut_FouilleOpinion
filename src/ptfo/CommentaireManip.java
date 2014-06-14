@@ -1,10 +1,8 @@
 package ptfo;
 
-import static java.lang.System.exit;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class CommentaireManip {
@@ -32,7 +30,7 @@ public class CommentaireManip {
             Scanner s;
 
             PreparedStatement lanceRequete3;
-            String select = "select * from COMMENTAIRE";
+            String select = "select * from COMMENTAIRE_2";
             lanceRequete3 = conn.prepareStatement(select);
 
             ResultSet requete;
@@ -83,7 +81,7 @@ public class CommentaireManip {
                                     total += rate;
                                     phrase = phrase.replaceAll("'", "''");
                                     PreparedStatement lanceRequete4_0;
-                                    String selectMaxID = "select max(ID_PHRASE) from PHRASE_NB";
+                                    String selectMaxID = "select max(ID_PHRASE) from PHRASE_2";
                                     lanceRequete4_0 = conn.prepareStatement(selectMaxID);
                                     ResultSet requete4_0;
                                     requete4_0 = lanceRequete4_0.executeQuery();
@@ -92,7 +90,7 @@ public class CommentaireManip {
                                     lanceRequete4_0.close();
                                     requete4_0.close();
                                     PreparedStatement lanceRequete4;
-                                    String insert = "insert into PHRASE_NB values(?,?,?,?)";
+                                    String insert = "insert into PHRASE_2 values(?,?,?,?)";
                                     lanceRequete4 = conn.prepareStatement(insert);
                                     lanceRequete4.setInt(1, id);
                                     lanceRequete4.setString(2, phrase);
@@ -104,11 +102,11 @@ public class CommentaireManip {
                         }
                         PreparedStatement lanceRequete5;
                         PreparedStatement lanceRequete6;
-                        String update1 = "update COMMENTAIRE SET CLASSE=? where ID_POSTE =?";
+                        String update1 = "update COMMENTAIRE_2 SET CLASSE=? where ID_POSTE =?";
                         lanceRequete5 = conn.prepareStatement(update1);
                         lanceRequete5.setString(1, String.valueOf(total));
                         lanceRequete5.setInt(2, requete.getInt("ID_POSTE"));
-                        String update2 = "update COMMENTAIRE SET CLASSE='np' where ID_POSTE =? ";
+                        String update2 = "update COMMENTAIRE_2 SET CLASSE='np' where ID_POSTE =? ";
                         lanceRequete6 = conn.prepareStatement(update2);
                         lanceRequete6.setInt(1, requete.getInt("ID_POSTE"));
                         if (pertinent) {
