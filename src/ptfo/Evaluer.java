@@ -1,10 +1,14 @@
-package ptfo;
+ package ptfo;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+/**
+ *
+ * @author MerysPIEGAY
+ */
 public class Evaluer {
 
     Double ratio;
@@ -12,11 +16,20 @@ public class Evaluer {
     int fauxpos, fauxneg, fauxneu, nbphrase, vraipos, vraineg, vraineu;
     ArrayList<Integer> allfauxpos;
 
-    Evaluer() throws SQLException {
+    /**
+     *
+     * @throws SQLException
+     */
+    public Evaluer() throws SQLException {
 
         classifieur = new Classifier();
     }
 
+    /**
+     *
+     * @return
+     * @throws SQLException
+     */
     public Double getRatio() throws SQLException {
         allfauxpos = new ArrayList<>();
         fauxpos = 0;
