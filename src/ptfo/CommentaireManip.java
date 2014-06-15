@@ -47,6 +47,7 @@ public class CommentaireManip {
                         Commentaire comment;
                         comment = new Commentaire(requete.getString("POSTE"));
                         for (String phrase : comment.phrases) {
+                              System.out.println("\n\n-----------------------------------------------------------");
                               System.out.println(phrase);
                               saisie_correcte = true;
                               System.out.println("\nentrez la note du commentaire entre n,p,b,i :");

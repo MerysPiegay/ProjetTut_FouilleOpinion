@@ -15,13 +15,13 @@ import java.sql.PreparedStatement;
  */
 public class NaiveBayes {
 
-      float commPosit, commNegat, commTot;
+      float commPositif, commNegatif, commTotal, commNeutre;
       float note;
-      float occPosit, occTotal, occNeg;
+      float occPositif, occTotal, occNegatif, occNeutre;
       Connection co1;
 
       NaiveBayes() throws SQLException {
-            commPosit = commNegat = commTot = 0;
+            commPositif = commNegatif = commTotal = commNeutre = 0;
             co1 = new Connection();
       }
 
@@ -32,26 +32,37 @@ public class NaiveBayes {
        */
       public void recupereNbrComm() throws SQLException {
             PreparedStatement lanceRequete1;
+            PreparedStatement lanceRequeteTotal;
             String selectCount = "select count(PHRASE) from PHRASE_NB where CLASSE >=?";
             String selectCountTotal = "select count(PHRASE) from PHRASE_NB";
             lanceRequete1 = co1.conn.prepareStatement(selectCount);
+            lanceRequeteTotal = co1.conn.prepareStatement(selectCountTotal);
             ResultSet requete1;
+            ResultSet requeteTotal;
 
             // récupération des CT et CP.
             lanceRequete1.setInt(1, 1);
             requete1 = lanceRequete1.executeQuery();
             requete1.next();
-            commPosit = requete1.getInt(1);
+            commPositif = requete1.getInt(1);
+            requete1.close();
             lanceRequete1.setInt(1, -1);
             requete1 = lanceRequete1.executeQuery();
             requete1.next();
-            commNegat = requete1.getInt(1);
-            lanceRequete1 = co1.conn.prepareStatement(selectCountTotal);
-            requete1 = lanceRequete1.executeQuery();
-            requete1.next();
-            commTot = requete1.getInt(1);
+            commNegatif = requete1.getInt(1);
             requete1.close();
+            lanceRequete1.setInt(1, 0);
+            requete1 = lanceRequeteTotal.executeQuery();
+            requete1.next();
+            commNeutre = requete1.getInt(1);
+            requete1.close();
+            requeteTotal = lanceRequeteTotal.executeQuery();
+            requeteTotal.next();
+            commTotal = requeteTotal.getInt(1);
+            requeteTotal.close();
             lanceRequete1.close();
+            lanceRequeteTotal.close();
+            
       }
 
       /**
@@ -67,14 +78,16 @@ public class NaiveBayes {
             lanceRequeteOccur = co1.conn.prepareStatement(selectMot);
             lanceRequeteOccur.setString(1, s);
             ResultSet requeteOccur;
-            occPosit = 0;
-            occNeg = 0;
+            occPositif = 0;
+            occNegatif = 0;
+            occNeutre = 0;
             occTotal = 0;
 
             requeteOccur = lanceRequeteOccur.executeQuery();
             if (requeteOccur.next()) {
-                  occPosit = (float) requeteOccur.getInt("OCCUR_POSITIF");
-                  occNeg = (float) requeteOccur.getInt("OCCUR_NEGATIF");
+                  occPositif = (float) requeteOccur.getInt("OCCUR_POSITIF");
+                  occNegatif = (float) requeteOccur.getInt("OCCUR_NEGATIF");
+                  occNeutre = (float) requeteOccur.getInt("OCCUR_NEUTRE");
                   occTotal = (float) requeteOccur.getInt("OCCUR_TOTAL");
             }
             requeteOccur.close();
@@ -292,8 +305,8 @@ public class NaiveBayes {
                   Phrase phrase;
                   phrase = new Phrase(requetePhrase.getString("PHRASE"));
                   int classePhrase = requetePhrase.getInt("CLASSE");
-                  apprentissageMots(phrase, classePhrase);
-                  //apprentissageMotsTest(phrase, classePhrase);
+                  // apprentissageMots(phrase, classePhrase);
+                  apprentissageMotsTest(phrase, classePhrase);
             }
             requetePhrase.close();
             lanceRequetePhrase.close();
@@ -313,13 +326,13 @@ public class NaiveBayes {
             for (String s : phrase.mots) {
                   s = s.toLowerCase();
                   recupereNbrOccur(s);
-                  if (occPosit > 0) {
+                  if (occPositif > 0) {
                         System.out.println(s);
-                        noteNB *= (occPosit / commPosit);
+                        noteNB *= (occPositif / commPositif)*10;
                         System.out.println("nbr NB POSITIF Temp : " + noteNB);
                   }
             }
-            noteNB *= commPosit / commTot;
+            noteNB *= commPositif / commTotal;
             System.out.println("\t\tNombre NB POSITIF : " + noteNB);
             return noteNB;
 
@@ -338,14 +351,31 @@ public class NaiveBayes {
             for (String s : phrase.mots) {
                   s = s.toLowerCase();
                   recupereNbrOccur(s);
-                  if (occNeg > 0) {
+                  if (occNegatif > 0) {
                         System.out.println(s);
-                        noteNB *= (occNeg / commNegat);
+                        noteNB *= (occNegatif / commNegatif)*10;
                         System.out.println("nbr NB NEGATIF Temp : " + noteNB);
                   }
             }
-            noteNB *= commNegat / commTot;
+            noteNB *= commNegatif / commTotal;
             System.out.println("\t\tNombre NB NEGATIF : " + noteNB);
+            return noteNB;
+      }
+
+      public float calculNoteNBNeutre(Phrase phrase) throws SQLException {
+            float noteNB = 1;
+            recupereNbrComm();
+            for (String s : phrase.mots) {
+                  s = s.toLowerCase();
+                  recupereNbrOccur(s);
+                  if (occNeutre > 0) {
+                        System.out.println(s);
+                        noteNB *= (occNeutre / commNeutre)*10;
+                        System.out.println("nbr NB NEUTRE Temp : " + noteNB);
+                  }
+            }
+            noteNB *= commNeutre / commTotal;
+            System.out.println("\t\tNombre NB NEUTRE : " + noteNB);
             return noteNB;
       }
 
@@ -356,35 +386,53 @@ public class NaiveBayes {
        * @param phrase
        * @throws SQLException
        */
-      public void miseAJourPhrase(Phrase phrase) throws SQLException {
+      public void miseAJourPhrase(Phrase phrase, int id) throws SQLException {
             int classe;
-            PreparedStatement lanceRequeteID;
-            String selectMaxID = "select max(ID_PHRASE) from PHRASE_NB_TEST";
-            lanceRequeteID = co1.conn.prepareStatement(selectMaxID);
-            ResultSet requeteID;
-            requeteID = lanceRequeteID.executeQuery();
-            requeteID.next();
-            int ID = requeteID.getInt(1) + 1;
+            //PreparedStatement lanceRequeteID;
+            //String selectMaxID = "select max(ID_PHRASE) from PHRASE_NB_TEST";
+            //lanceRequeteID = co1.conn.prepareStatement(selectMaxID);
+            //ResultSet requeteID;
+            //requeteID = lanceRequeteID.executeQuery();
+            //requeteID.next();
+            //int ID = requeteID.getInt(1) + 1;
             float noteNbPos = calculNoteNBPositif(phrase);
             float noteNbNeg = calculNoteNBNegatif(phrase);
-            if (noteNbPos != noteNbNeg) {
-                  classe = noteNbPos > noteNbNeg ? 1 : -1;
+            float noteNbNeutre = calculNoteNBNeutre(phrase);
+            /*if (noteNbPos == noteNbNeg){
+                  if (noteNbPos == noteNbNeutre){
+                        classe = 9;
+                        System.out.println("\n\n\t\t\t\t TOTALEMENT INDETERMINE \n\n\n");
+                  }
+            }*/
+            if (noteNbPos > noteNbNeg) {
+                  if (noteNbPos > noteNbNeutre) {
+                        classe = 1;
+                        System.out.println("\n\n\t\t\t\t CLASSE POSITIVE\n\n");
+                  } else {
+                        classe = 0;
+                        System.out.println("\n\n\t\t\t\t CLASSE NEUTRE\n\n");
+                  }
             } else {
-                  classe = 0;
+                  if (noteNbNeg > noteNbNeutre) {
+                        classe = -1;
+                        System.out.println("\n\n\t\t\t\t CLASSE NEGATIVE\n\n");
+                  } else {
+                        classe = 0;
+                        System.out.println("\n\n\t\t\t\t CLASSE NEUTRE\n\n");
+                  }
             }
-            System.out.println(noteNbPos > noteNbNeg ? "\n\n\t\t\t\t CLASSE POSITIVE" : "\t\t\t\t CLASSE NEGATIVE\n\n");
             PreparedStatement maj;
             String insertPhraseTest = "insert into PHRASE_NB_TEST values (?,?,?,0,?,?)";
             maj = co1.conn.prepareStatement(insertPhraseTest);
-            maj.setInt(1, ID);
+            maj.setInt(1, id);
             maj.setString(2, phrase.phrase);
             maj.setInt(3, classe);
             maj.setFloat(4, noteNbPos);
             maj.setFloat(5, noteNbNeg);
             maj.executeUpdate();
             maj.close();
-            requeteID.close();
-            lanceRequeteID.close();
+            //requeteID.close();
+            //lanceRequeteID.close();
             apprentissageMotsTest(phrase, classe);
       }
 
@@ -394,18 +442,19 @@ public class NaiveBayes {
        * @param comment
        * @throws SQLException
        */
+      /*
       public void notationCommentaire(Commentaire comment) throws SQLException {
-            /*note = 0;
+            note = 0;
              Statement lanceRequetePhrase;
-             lanceRequetePhrase = co1.conn.createStatement();*/
+             lanceRequetePhrase = co1.conn.createStatement();
 
             for (String s : comment.phrases) {
                   Phrase phrase = new Phrase(s);
                   miseAJourPhrase(phrase);
             }
 
-            /*lanceRequetePhrase.close();*/
-      }
+            lanceRequetePhrase.close();
+      }*/
 
       /**
        * @param args the command line arguments
@@ -415,21 +464,25 @@ public class NaiveBayes {
             NaiveBayes nb;
             nb = new NaiveBayes();
             //nb.premierApprentissageMots();
-
+   
             PreparedStatement lanceRequeteTest;
-            String selectPhraseBackup = "select * from PHRASE_NB_BACKUP";
-            lanceRequeteTest = nb.co1.conn.prepareStatement(selectPhraseBackup);
+            String selectPhrase = "select * from PHRASE_NB";
+            lanceRequeteTest = nb.co1.conn.prepareStatement(selectPhrase);
             ResultSet requeteTest;
             requeteTest = lanceRequeteTest.executeQuery();
             int i = 0;
-            while (requeteTest.next() && i <= 5) {
+            while (requeteTest.next()) {
                   Phrase phraseDeTest;
                   phraseDeTest = new Phrase(requeteTest.getString("PHRASE"));
+                  int idPhrase = requeteTest.getInt("ID_PHRASE");
                   System.out.println(phraseDeTest);
-                  nb.miseAJourPhrase(phraseDeTest);
-                  i++;
-                  //phraseDeTest = new Phrase("Ce pneu est super dangereux");
-            }
+                  nb.miseAJourPhrase(phraseDeTest, idPhrase);
+                  //phraseDeTest = new Phrase("Ce pneu nul ");
+                  //int idPhrase = 2;
+                
+           }
+           requeteTest.close();
+           lanceRequeteTest.close();
       }
 
 }
