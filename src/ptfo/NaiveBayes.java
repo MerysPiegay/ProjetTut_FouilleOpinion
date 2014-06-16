@@ -25,48 +25,7 @@ public class NaiveBayes {
             co1 = new Connection();
       }
 
-      /**
-       * Va calculer le nombre de commentaires positifs, négatifs et neutres
-       *
-       * @throws SQLException
-       */
-      /*
-       public void recupereNbrComm(int classe) throws SQLException {
-       PreparedStatement lanceRequete1;
-       PreparedStatement lanceRequeteTotal;
-       String selectCount = "select count(PHRASE) from RPHRASE where CLASSE=?";
-       String selectCountTotal = "select count(PHRASE) from RPHRASE";
-       lanceRequete1 = co1.conn.prepareStatement(selectCount);
-       lanceRequeteTotal = co1.conn.prepareStatement(selectCountTotal);
-       ResultSet requete1;
-       ResultSet requeteTotal;
-
-       // récupération des CT et CP.
-       lanceRequete1.setInt(1, 1);
-       requete1 = lanceRequete1.executeQuery();
-       requete1.next();
-       commPositif = requete1.getInt(1);
-       requete1.close();
-            
-       lanceRequete1.setInt(1, -1);
-       requete1 = lanceRequete1.executeQuery();
-       requete1.next();
-       commNegatif = requete1.getInt(1);
-       requete1.close();
-            
-       lanceRequete1.setInt(1, 0);
-       requete1 = lanceRequete1.executeQuery();
-       requete1.next();
-       commNeutre = requete1.getInt(1);
-       requete1.close();
-            
-       requeteTotal = lanceRequeteTotal.executeQuery();
-       requeteTotal.next();
-       commTotal = requeteTotal.getInt(1);
-       requeteTotal.close();
-       lanceRequete1.close();
-       lanceRequeteTotal.close();
-       }*/
+     
       /**
        * Récupère le nombre d'occurence pour chaque mot de la phrase et en fait
        * l'addition
@@ -328,6 +287,7 @@ public class NaiveBayes {
             maj.executeUpdate();
             maj.close();
             apprentissageMots(phrase, classe);
+            miseAjourNbrComm(classe);
       }
 
       public void miseAjourNbrComm(int classe) {
@@ -365,10 +325,6 @@ public class NaiveBayes {
                   int classe = requeteTest.getInt("CLASSE");
                   System.out.println(phraseDeTest);
                   nb.miseAJourPhrase(phraseDeTest, idPhrase);
-                  nb.miseAjourNbrComm(classe);
-                  //phraseDeTest = new Phrase("Ce pneu nul ");
-                  //int idPhrase = 2;
-
             }
             requeteTest.close();
             lanceRequeteTest.close();
