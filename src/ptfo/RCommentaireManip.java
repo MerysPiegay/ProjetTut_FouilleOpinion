@@ -50,7 +50,8 @@ public class RCommentaireManip {
                 System.out.println(requete.getString("RATE"));
 
                 for (String phrase : comment.phrases) {
-                    System.out.println(phrase);
+                    System.out.println("\n\n---------------------------------------------------------------------------");
+                      System.out.println(phrase);
                     saisie_correcte = true;
                     System.out.println("\nentrez la note du commentaire entre n,p,b,i :");
                     do {
@@ -107,7 +108,6 @@ public class RCommentaireManip {
                     lanceRequete5.executeUpdate("update RCOMMENTAIRE SET RATE=" + String.valueOf(total) + "where ID_RCOMMENTAIRE = " + requete.getInt("ID_RCOMMENTAIRE"));
                 }else{
                     lanceRequete5.executeUpdate("update RCOMMENTAIRE SET RATE='np' where ID_RCOMMENTAIRE = " + requete.getInt("ID_RCOMMENTAIRE"));
-                    
                 }
                 lanceRequete5.close();
             
