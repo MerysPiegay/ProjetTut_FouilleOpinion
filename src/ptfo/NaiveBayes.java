@@ -25,7 +25,6 @@ public class NaiveBayes {
             co1 = new Connection();
       }
 
-     
       /**
        * Récupère le nombre d'occurence pour chaque mot de la phrase et en fait
        * l'addition
@@ -65,7 +64,6 @@ public class NaiveBayes {
        */
       public void apprentissageMots(Phrase phraseNB, int classePhrase) throws SQLException {
 
-            miseAjourNbrComm(classePhrase);
             System.out.println(phraseNB);
             System.out.println("nbr comm positifs :" + commPositif);
             System.out.println("nbr comm neutre :" + commNeutre);
@@ -170,7 +168,7 @@ public class NaiveBayes {
        */
       public void premierApprentissageMots() throws SQLException {
             PreparedStatement lanceRequetePhrase;
-            String selectPhrase = "select * from RPHRASE";
+            String selectPhrase = "select * from PHRASE_NB";
             lanceRequetePhrase = co1.conn.prepareStatement(selectPhrase);
             ResultSet requetePhrase;
             requetePhrase = lanceRequetePhrase.executeQuery();
@@ -179,6 +177,7 @@ public class NaiveBayes {
                   phrase = new Phrase(requetePhrase.getString("PHRASE"));
                   int classePhrase = requetePhrase.getInt("CLASSE");
                   apprentissageMots(phrase, classePhrase);
+                  miseAjourNbrComm(classePhrase);
             }
             requetePhrase.close();
             lanceRequetePhrase.close();
@@ -193,18 +192,25 @@ public class NaiveBayes {
        */
       public float calculNoteNBPositif(Phrase phrase) throws SQLException {
             float noteNB = 1;
-
+            //boolean passage = false;
             for (String s : phrase.mots) {
                   s = s.toLowerCase();
                   recupereNbrOccur(s);
-                  if (occPositif > 0) {
+                  if (occPositif != 0) {
+                        //passage = true;
                         System.out.println(s);
                         noteNB *= (occPositif / commPositif);
                         System.out.println("nbr NB POSITIF Temp : " + noteNB);
+                  }else {
+                        noteNB *=(1/commPositif);
                   }
             }
-            noteNB *= commPositif / commTotal;
-            System.out.println("\t\tNombre NB POSITIF : " + noteNB);
+            //if (passage) {
+                  noteNB *= commPositif / commTotal;
+                  System.out.println("\t\tNombre NB POSITIF : " + noteNB);
+           // } else {
+              //    noteNB = 0;
+           // }
             return noteNB;
       }
 
@@ -217,33 +223,48 @@ public class NaiveBayes {
        */
       public float calculNoteNBNegatif(Phrase phrase) throws SQLException {
             float noteNB = 1;
+            //boolean passage = false;
             for (String s : phrase.mots) {
                   s = s.toLowerCase();
                   recupereNbrOccur(s);
-                  if (occNegatif > 0) {
+                  if (occNegatif != 0) {
+               //         passage = true;
                         System.out.println(s);
                         noteNB *= (occNegatif / commNegatif);
                         System.out.println("nbr NB NEGATIF Temp : " + noteNB);
+                  }else {
+                        noteNB *=(1/commNegatif);
                   }
             }
-            noteNB *= commNegatif / commTotal;
-            System.out.println("\t\tNombre NB NEGATIF : " + noteNB);
+            //if (passage) {
+            //      noteNB *= commNegatif / commTotal;
+            //      System.out.println("\t\tNombre NB NEGATIF : " + noteNB);
+           // } else {
+            //      noteNB = 0;
+           // }
             return noteNB;
       }
 
       public float calculNoteNBNeutre(Phrase phrase) throws SQLException {
             float noteNB = 1;
+            //boolean passage = false;
             for (String s : phrase.mots) {
                   s = s.toLowerCase();
                   recupereNbrOccur(s);
-                  if (occNeutre > 0) {
+                  if (occNeutre != 0) {
+                 //       passage = true;
                         System.out.println(s);
                         noteNB *= (occNeutre / commNeutre);
                         System.out.println("nbr NB NEUTRE Temp : " + noteNB);
+                  }else {
+                        noteNB *=(1/commNeutre);
                   }
             }
-            noteNB *= commNeutre / commTotal;
-            System.out.println("\t\tNombre NB NEUTRE : " + noteNB);
+            //if (passage) {
+              //    noteNB *= commNeutre / commTotal;
+           //       System.out.println("\t\tNombre NB NEUTRE : " + noteNB);
+            //}else noteNB = 0;
+
             return noteNB;
       }
 
@@ -313,7 +334,7 @@ public class NaiveBayes {
             nb.premierApprentissageMots();
 
             PreparedStatement lanceRequeteTest;
-            String selectPhrase = "select * from PHRASE_NB";
+            String selectPhrase = "select * from PHRASE_DEMO";
             lanceRequeteTest = nb.co1.conn.prepareStatement(selectPhrase);
             ResultSet requeteTest;
             requeteTest = lanceRequeteTest.executeQuery();
@@ -322,7 +343,6 @@ public class NaiveBayes {
                   Phrase phraseDeTest;
                   phraseDeTest = new Phrase(requeteTest.getString("PHRASE"));
                   int idPhrase = requeteTest.getInt("ID_PHRASE");
-                  int classe = requeteTest.getInt("CLASSE");
                   System.out.println(phraseDeTest);
                   nb.miseAJourPhrase(phraseDeTest, idPhrase);
             }
