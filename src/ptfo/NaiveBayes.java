@@ -201,16 +201,16 @@ public class NaiveBayes {
                         System.out.println(s);
                         noteNB *= (occPositif / commPositif);
                         System.out.println("nbr NB POSITIF Temp : " + noteNB);
-                  }else {
-                        noteNB *=(1/commPositif);
+                  } else {
+                        noteNB *= (1 / commPositif);
                   }
             }
             //if (passage) {
-                  noteNB *= commPositif / commTotal;
-                  System.out.println("\t\tNombre NB POSITIF : " + noteNB);
+            noteNB *= commPositif / commTotal;
+            System.out.println("\t\tNombre NB POSITIF : " + noteNB);
            // } else {
-              //    noteNB = 0;
-           // }
+            //    noteNB = 0;
+            // }
             return noteNB;
       }
 
@@ -228,20 +228,20 @@ public class NaiveBayes {
                   s = s.toLowerCase();
                   recupereNbrOccur(s);
                   if (occNegatif != 0) {
-               //         passage = true;
+                        //         passage = true;
                         System.out.println(s);
                         noteNB *= (occNegatif / commNegatif);
                         System.out.println("nbr NB NEGATIF Temp : " + noteNB);
-                  }else {
-                        noteNB *=(1/commNegatif);
+                  } else {
+                        noteNB *= (1 / commNegatif);
                   }
             }
             //if (passage) {
-            //      noteNB *= commNegatif / commTotal;
-            //      System.out.println("\t\tNombre NB NEGATIF : " + noteNB);
+            noteNB *= commNegatif / commTotal;
+            System.out.println("\t\tNombre NB NEGATIF : " + noteNB);
            // } else {
             //      noteNB = 0;
-           // }
+            // }
             return noteNB;
       }
 
@@ -252,17 +252,17 @@ public class NaiveBayes {
                   s = s.toLowerCase();
                   recupereNbrOccur(s);
                   if (occNeutre != 0) {
-                 //       passage = true;
+                        //       passage = true;
                         System.out.println(s);
                         noteNB *= (occNeutre / commNeutre);
                         System.out.println("nbr NB NEUTRE Temp : " + noteNB);
-                  }else {
-                        noteNB *=(1/commNeutre);
+                  } else {
+                        noteNB *= (1 / commNeutre);
                   }
             }
             //if (passage) {
-              //    noteNB *= commNeutre / commTotal;
-           //       System.out.println("\t\tNombre NB NEUTRE : " + noteNB);
+            noteNB *= commNeutre / commTotal;
+            System.out.println("\t\tNombre NB NEUTRE : " + noteNB);
             //}else noteNB = 0;
 
             return noteNB;
