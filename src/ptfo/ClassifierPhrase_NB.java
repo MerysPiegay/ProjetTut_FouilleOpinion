@@ -5,11 +5,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class Classifier {
+public class ClassifierPhrase_NB {
 
     Connection co;
 
-    Classifier() throws SQLException {
+    ClassifierPhrase_NB() throws SQLException {
 
         co = new Connection();
     }
@@ -104,12 +104,12 @@ public class Classifier {
                 ResultSet requete2;
                 mot = requete1.getString("LEMME");
                 if (mot.length() > 1) {
-                    requete2 = lanceRequete2.executeQuery("select * from MOTS where LEMME = '" + mot + "'");
+                    requete2 = lanceRequete2.executeQuery("select * from MOTS_HY_TEST where LEMME = '" + mot + "'");
                     if (requete2.next()) {
                         Statement lanceRequete2_1;
                         lanceRequete2_1 = co.conn.createStatement();
                         ResultSet requete2_1;
-                        requete2_1 = lanceRequete2_1.executeQuery("select count(ID_LEMME) from MOTS where LEMME = '" + mot + "'");
+                        requete2_1 = lanceRequete2_1.executeQuery("select count(ID_LEMME) from MOTS_HY_TEST where LEMME = '" + mot + "'");
                         requete2_1.next();
                         if (requete2_1.getInt(1) != 0
                                 && Math.abs((double) (requete2.getInt("CLASSE")) / (double) requete2.getInt("OCCUR")) >= .0
@@ -148,8 +148,8 @@ public class Classifier {
     }
 
     public static void main(String[] args) throws SQLException {
-        Classifier l;
-        l = new Classifier();
+        ClassifierPhrase_NB l;
+        l = new ClassifierPhrase_NB();
         Commentaire c;
         c = new Commentaire(" pneu bruyant et pas très confortable,par contre sur l'a3 ça accroche vraiment bien la route même sur sol humide,a recommender si conduite sportive ");
         int classe = 0;

@@ -22,6 +22,12 @@ public class Phrase {
     public Phrase(String s) {
         phrase = s;
         //elements = phrase.split("\\+"); 
+
+        phrase = phrase.replace("é", "e");
+        phrase = phrase.replace("è", "e");
+        phrase = phrase.replace("ê", "e");
+        phrase = phrase.replace("ù", "u");
+        phrase = phrase.replace("à", "a");
         elements = phrase.split("[ .\",\'=!/():;_?\\+\\-%*$€¿¡]"); // MODIF : ajout des parenthèses
         mots = new ArrayList((Arrays.asList(elements)));
         phrase = join(mots);
@@ -38,7 +44,7 @@ public class Phrase {
      */
     public boolean detectNegation() {
         for (int i = 0; i < elements.length; i++) {
-            if (Pattern.matches("ne|pas|jamais|rien|aucun|aucune|sans|n|impossible", elements[i])) { // expression regulière
+            if (Pattern.matches("ne|pas|jamais|peu|rien|aucun|aucune|sans|n|impossible", elements[i])) { // expression regulière
                 System.out.println("NEGATION DÉTÉCTÉE !!!!!!!!!!!!");
                 return true;
             } else {
@@ -71,12 +77,10 @@ public class Phrase {
     }
 
     /* change les mots du commentaire par le lemme correspondant le plus frequent */
-
     /**
      *
      * @return
      */
-    
     public Phrase lemmatise() {
         Lexique l = new Lexique("src/ptfo/temp2.csv"); // récup de la phrase brute
         Lexique liste_pneus = new Lexique("src/ptfo/pneus_sans_dup.csv");
@@ -134,9 +138,9 @@ public class Phrase {
     }
 
     public static void main(String[] args) {
-        Phrase p = new Phrase("ces pneus sont loins d être les meilleurs, et sont assez mauvais");
+        Phrase p = new Phrase("fédéral");
         System.out.println(p.phrase);
         p.detectNegation();
-        
+
     }
 }

@@ -1,37 +1,37 @@
- package ptfo;
+package ptfo;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
-*
-* @author MerysPIEGAY
-*/
-public class Evaluer {
+ *
+ * @author MerysPIEGAY
+ */
+public class EvaluerPhraseNB {
 
     Double ratio;
-    Classifier classifieur;
+    ClassifierPhrase_NB classifieur;
     int fauxpos, fauxneg, fauxneu, nbphrase, vraipos, vraineg, vraineu;
-    ArrayList<Integer> allfauxpos;
+    ArrayList<Integer> allfauxneu;
 
     /**
-*
-* @throws SQLException
-*/
-    public Evaluer() throws SQLException {
+     *
+     * @throws SQLException
+     */
+    public EvaluerPhraseNB() throws SQLException {
 
-        classifieur = new Classifier();
+        classifieur = new ClassifierPhrase_NB();
     }
 
     /**
-*
-* @return
-* @throws SQLException
-*/
+     *
+     * @return @throws SQLException
+     */
     public Double getRatio() throws SQLException {
-        allfauxpos = new ArrayList<>();
+        allfauxneu = new ArrayList<>();
         fauxpos = 0;
         fauxneg = 0;
         fauxneu = 0;
@@ -43,24 +43,14 @@ public class Evaluer {
         Statement lanceRequete1;
         lanceRequete1 = co.conn.createStatement();
         ResultSet requete1;
-        requete1 = lanceRequete1.executeQuery("select * from PHRASE");
+        requete1 = lanceRequete1.executeQuery("select * from PHRASE_DEMO");
         Double total = 0.;
         Double ok = 0.;
         while (requete1.next()) {
-            nbphrase++;
-            Commentaire c;
-            c = new Commentaire(requete1.getString("PHRASE"));
-            int classe = 0;
-            for (String p : c.phrases) {
-                classe += classifieur.classifier(new Phrase(p));
-                Statement lanceRequete2_2_1;
-                lanceRequete2_2_1 = co.conn.createStatement();
-                System.out.println(p.replace("'","''"));
-                lanceRequete2_2_1.executeUpdate("update PHRASE set NOTE = "
-                        + classe
-                        + " where PHRASE = '"
-                        + p.replace("'","''") + "'");
-            }
+            Phrase p;
+            p = new Phrase(requete1.getString("PHRASE"));
+            double classe;
+            classe = classifieur.classifier(p);
             int rate = requete1.getInt("CLASSE");
             if ((classe != 0 && (classe / Math.abs(classe)) == rate) || classe == rate) {
                 ok++;
@@ -78,20 +68,33 @@ public class Evaluer {
                 switch (rate) {
                     case 1:
                         fauxpos++;
-                        allfauxpos.add(requete1.getInt("ID_PHRASE"));
                         break;
                     case -1:
                         fauxneg++;
                         break;
                     case 0:
                         fauxneu++;
+                        allfauxneu.add(requete1.getInt("ID_COMMENTAIRE"));
                         break;
                 }
             }
+            Statement lanceRequete2_2_1;
+            lanceRequete2_2_1 = co.conn.createStatement();
+
+            Statement lanceRequete2_2_2;
+            lanceRequete2_2_2 = co.conn.createStatement();
+            ResultSet requete2_2_2;
+            requete2_2_2 = lanceRequete2_2_2.executeQuery("select count(ID_PHRASE) from PHRASE_HY_TEST_2");
+            int idmax=0;
+            if(requete2_2_2.next())idmax=requete2_2_2.getInt(1);
+            lanceRequete2_2_1.executeUpdate("insert into PHRASE_HY_TEST_2 "
+                    + "values ("+idmax+",'" + p.phrase + "'," + rate + "," + requete1.getInt("ID_COMMENTAIRE") + "," + classe + ")");
+            lanceRequete2_2_1.close();
+
             total++;
             System.out.println(total + "\t" + rate);
             System.out.println(ok + "\t" + classe);
-            System.out.println(c);
+            System.out.println(p);
         }
         requete1.close();
         lanceRequete1.close();
@@ -101,9 +104,9 @@ public class Evaluer {
 
     public static void main(String[] args) throws SQLException {
 
-        Evaluer e;
-        e = new Evaluer();
-        System.out.println(e.getRatio());
+        EvaluerPhraseNB e;
+        e = new EvaluerPhraseNB();
+        System.out.println("\033[32m" + e.getRatio());
 
         System.out.println("total " + e.nbphrase);
         System.out.println("faux pos " + e.fauxpos);
@@ -112,6 +115,7 @@ public class Evaluer {
         System.out.println("vrai pos " + e.vraipos);
         System.out.println("vrai neu " + e.vraineu);
         System.out.println("vrai neg " + e.vraineg);
-        System.out.println(e.allfauxpos);
+        Collections.sort(e.allfauxneu);
+        System.out.println(e.allfauxneu);
     }
 }

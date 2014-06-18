@@ -9,7 +9,7 @@ import java.util.ArrayList;
 *
 * @author MerysPIEGAY
 */
-public class Evaluer {
+public class Evaluer1 {
 
     Double ratio;
     Classifier classifieur;
@@ -20,7 +20,7 @@ public class Evaluer {
 *
 * @throws SQLException
 */
-    public Evaluer() throws SQLException {
+    public Evaluer1() throws SQLException {
 
         classifieur = new Classifier();
     }
@@ -101,8 +101,8 @@ public class Evaluer {
 
     public static void main(String[] args) throws SQLException {
 
-        Evaluer e;
-        e = new Evaluer();
+        Evaluer1 e;
+        e = new Evaluer1();
         System.out.println(e.getRatio());
 
         System.out.println("total " + e.nbphrase);

@@ -28,13 +28,14 @@ public class Learning {
         Statement lanceRequete;
         lanceRequete = co.conn.createStatement();
         ResultSet requete;
-        requete = lanceRequete.executeQuery("select * from COMMENTAIRE");
+        requete = lanceRequete.executeQuery("select * from RCOMMENTAIRE");
         while (requete.next()) {
             Commentaire comm;
-            comm = new Commentaire(requete.getString("POSTE"));
+            comm = new Commentaire(requete.getString("RCOMMENT"));
             for (String phrases : comm.phrases) {
                 Phrase phrase;
                 phrase = new Phrase(phrases);
+                //phrase = new Phrase(requete.getString("PHRASE"));
                 //System.out.println(phrase.mots);
 
                 for (String mot : phrase.mots) {
@@ -63,10 +64,17 @@ public class Learning {
                                 System.out.println("|||||||||" + requete2_1.getInt(1));
                                 if (requete2_1.getInt(1) == 0) {
                                     System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-                                    Statement lanceRequete3;
-                                    lanceRequete3 = co.conn.createStatement();
-                                    lanceRequete3.executeUpdate("insert into MOTS " + "values ((select count(ID_LEMME)from MOTS),'" + requete1.getString("LEMME") + "'," + requete.getInt("CLASSE") + ",1)");
-                                    lanceRequete3.close();
+                                    PreparedStatement reqins0;
+                                    //Statement lanceRequete3;
+                                    //lanceRequete3 = co.conn.createStatement();
+                                    reqins0 = co.conn.prepareStatement("insert into MOTS "
+                                            + "values ((select count(ID_LEMME)from MOTS),'"
+                                            + requete1.getString("LEMME")
+                                            + "'," + requete.getInt("CLASSE") + ",1)");
+
+                                    reqins0.executeUpdate();
+                                    reqins0.close();
+
                                 } else {
                                     requete2.next();
 
@@ -75,7 +83,10 @@ public class Learning {
 
                                     PreparedStatement reqins;
 
-                                    reqins = co.conn.prepareStatement("update MOTS set CLASSE = " + rate + ", OCCUR = OCCUR + 1 where LEMME = " + "'" + requete1.getString("LEMME") + "'");
+                                    reqins = co.conn.prepareStatement("update MOTS set CLASSE = ?, OCCUR = OCCUR + 1 where LEMME = ?");
+                                    reqins.setInt(1, rate);
+                                    reqins.setString(2, requete1.getString("LEMME"));
+
                                     reqins.executeUpdate();
                                     reqins.close();
 
@@ -95,10 +106,9 @@ public class Learning {
 
             }
 
-            requete.close();
-            lanceRequete.close();
-
         }
+        requete.close();
+        lanceRequete.close();
 
     }
 

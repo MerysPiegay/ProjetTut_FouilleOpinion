@@ -18,7 +18,7 @@ public class Commentaire {
      * @param commentaire
      */
     public Commentaire(String commentaire) {
-        elements = commentaire.split("[.?!(),:;]|[, ]donc[, ]|[, ]mais[, ]|[, ]et[, ]|[, ]certes[, ]|[, ]par contre[, ]|[, ]en revanche[, ]|[, ]néanmoins[, ]|[, ]neanmoins |[, ]bien que[, ]");
+        elements = commentaire.split("[.?!(),:;]|[, ]donc[, ]|[, ]mais[, ]|[, ]et[, ]|[, ]certes[, ]|[, ]par contre[, ]|[, ]en revanche[, ]|[, ]néanmoins[, ]|[, ]neanmoins |[, ]bien que[, ]|[a-z][A-Z]");
         phrases = new ArrayList((Arrays.asList(elements)));
     }
 
@@ -29,7 +29,8 @@ public class Commentaire {
 
     public static void main(String[] args) {
         Commentaire c;
-        c= new Commentaire("il est vrai que blabla.en revanche le blibli est mieux");
+        c= new Commentaire("jeDe");
         System.out.println(c.phrases.size());
+        System.out.println(c.phrases);
     }
 }
