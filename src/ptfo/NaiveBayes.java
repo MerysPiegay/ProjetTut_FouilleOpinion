@@ -15,9 +15,8 @@ import java.sql.PreparedStatement;
  */
 public class NaiveBayes {
 
-      float commPositif, commNegatif, commTotal, commNeutre;
-      float note;
-      float occPositif, occTotal, occNegatif, occNeutre;
+      float commPositif, commNegatif, commTotal, commNeutre;  // variable nous permettant de garde le nombre de commentaires de chaque type
+      float occPositif, occTotal, occNegatif, occNeutre; // nombre d'apparition d'un mot pour chaque classe et sur tout une table
       Connection co1;
 
       NaiveBayes() throws SQLException {
@@ -26,10 +25,9 @@ public class NaiveBayes {
       }
 
       /**
-       * Récupère le nombre d'occurence pour chaque mot de la phrase et en fait
-       * l'addition
+       * Récupère les occurences d'un mot passé en entrée (s)
        *
-       * @param phraseNote
+       * @param s
        * @throws SQLException
        */
       public void recupereNbrOccur(String s) throws SQLException {
@@ -55,8 +53,14 @@ public class NaiveBayes {
       }
 
       /**
-       * Va permettre de noter les mots si ils existent déjà dans la table si
-       * ils ne sont pas présent dans la table ils sont rajoutés dedans
+       * Va permettre de noter les mots d'une phrase passé en entrée avec sa
+       * classe si ils existent déjà dans la table si ils ne sont pas présent
+       * dans la table ils sont rajoutés dedans
+       *
+       * Va nous servir pour le premier apprentissage et pour la mise à jour une
+       * fois qu'on a classifié une phrase.
+       *
+       * MOTSNB : Table d'enregistrement des mots appris
        *
        * @param phraseNB
        * @param classePhrase
@@ -70,7 +74,7 @@ public class NaiveBayes {
             System.out.println("nbr comm negatif :" + commNegatif);
             System.out.println("nbr comm total :" + commTotal);
             for (String s : phraseNB.mots) {
-                  Phrase motsDejaFait;
+                  Phrase motsDejaFait; // On ne compte qu'une fois un mot par phrase donc cette phrase est là pour récupérer les mots notés et être sûr que si on le recroise il ne soit pas pris en compte une deuxième fois
                   motsDejaFait = new Phrase("");
                   if (!s.equals("") && !motsDejaFait.mots.contains(s)) {
                         s = s.toLowerCase();
@@ -162,13 +166,16 @@ public class NaiveBayes {
       }
 
       /**
-       * Va permettre de noter la première fois tous les mots
+       * Va permettre de noter la première fois tous les mots de toute une table
+       * d'apprentissage. A faire tourner au début de chaque test ATTENTION :
+       * RPHRASE est la table d'apprentissage, la changer si on veut changer de
+       * table
        *
        * @throws SQLException
        */
       public void premierApprentissageMots() throws SQLException {
             PreparedStatement lanceRequetePhrase;
-            String selectPhrase = "select * from PHRASE_NB";
+            String selectPhrase = "select * from RPHRASE";  // Table d'apprentissage
             lanceRequetePhrase = co1.conn.prepareStatement(selectPhrase);
             ResultSet requetePhrase;
             requetePhrase = lanceRequetePhrase.executeQuery();
@@ -184,7 +191,7 @@ public class NaiveBayes {
       }
 
       /**
-       * Va calculer la fameuse note NB positive
+       * Va calculer la fameuse note NB positive pour toute une phrase
        *
        * @param phrase
        * @return
@@ -208,14 +215,14 @@ public class NaiveBayes {
             //if (passage) {
             noteNB *= commPositif / commTotal;
             System.out.println("\t\tNombre NB POSITIF : " + noteNB);
-           // } else {
+            // } else {
             //    noteNB = 0;
             // }
             return noteNB;
       }
 
       /**
-       * Va calculer la version NB négative
+       * Pareil que la précedente mais version NB négative
        *
        * @param phrase
        * @return
@@ -223,12 +230,10 @@ public class NaiveBayes {
        */
       public float calculNoteNBNegatif(Phrase phrase) throws SQLException {
             float noteNB = 1;
-            //boolean passage = false;
             for (String s : phrase.mots) {
                   s = s.toLowerCase();
                   recupereNbrOccur(s);
                   if (occNegatif != 0) {
-                        //         passage = true;
                         System.out.println(s);
                         noteNB *= (occNegatif / commNegatif);
                         System.out.println("nbr NB NEGATIF Temp : " + noteNB);
@@ -236,23 +241,24 @@ public class NaiveBayes {
                         noteNB *= (1 / commNegatif);
                   }
             }
-            //if (passage) {
             noteNB *= commNegatif / commTotal;
             System.out.println("\t\tNombre NB NEGATIF : " + noteNB);
-           // } else {
-            //      noteNB = 0;
-            // }
             return noteNB;
       }
 
+      /**
+       * Et la version pour le neutre !
+       *
+       * @param phrase
+       * @return
+       * @throws SQLException
+       */
       public float calculNoteNBNeutre(Phrase phrase) throws SQLException {
             float noteNB = 1;
-            //boolean passage = false;
             for (String s : phrase.mots) {
                   s = s.toLowerCase();
                   recupereNbrOccur(s);
                   if (occNeutre != 0) {
-                        //       passage = true;
                         System.out.println(s);
                         noteNB *= (occNeutre / commNeutre);
                         System.out.println("nbr NB NEUTRE Temp : " + noteNB);
@@ -260,19 +266,19 @@ public class NaiveBayes {
                         noteNB *= (1 / commNeutre);
                   }
             }
-            //if (passage) {
             noteNB *= commNeutre / commTotal;
             System.out.println("\t\tNombre NB NEUTRE : " + noteNB);
-            //}else noteNB = 0;
-
             return noteNB;
       }
 
       /**
        * Mise à jou de toute une phrase avec mise à jour des mots dedans et
-       * update de la table phrase.
+       * update de la table phrase. On passe en entrée l'ID de la phrase pour
+       * être sûr que dans les test de comparaisons on ai les même ID pour les
+       * phrase classifiées par l'algo et les phrase classifiées à la main
        *
        * @param phrase
+       * @param id
        * @throws SQLException
        */
       public void miseAJourPhrase(Phrase phrase, int id) throws SQLException {
@@ -311,6 +317,12 @@ public class NaiveBayes {
             miseAjourNbrComm(classe);
       }
 
+      /**
+       * Pour avoir le nombre de commentaires positifs neutres et négatifs On
+       * met juste en entrée la classe et il incrémente les var globales
+       *
+       * @param classe
+       */
       public void miseAjourNbrComm(int classe) {
             if (classe == 1) {
                   commPositif++;
@@ -334,7 +346,7 @@ public class NaiveBayes {
             nb.premierApprentissageMots();
 
             PreparedStatement lanceRequeteTest;
-            String selectPhrase = "select * from PHRASE_DEMO";
+            String selectPhrase = "select * from RPHRASE"; // ATTENTION cette fois table de test ! ! 
             lanceRequeteTest = nb.co1.conn.prepareStatement(selectPhrase);
             ResultSet requeteTest;
             requeteTest = lanceRequeteTest.executeQuery();

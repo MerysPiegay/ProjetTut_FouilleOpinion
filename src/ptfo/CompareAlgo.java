@@ -17,13 +17,17 @@ import java.util.*;
 public class CompareAlgo {
 
       Connection connexion;
-      NaiveBayes nb;
 
       public CompareAlgo() throws SQLException {
             connexion = new Connection();
             
       }
-
+/**
+ * Cette fonction nous a servi un moment pour formater des tables de phrases selon me même format à une époque ou nous étions 
+ * entre deux types de phrase ... 
+ * maintenant ne sert plus, mais on vous la laisse en cadeau ! ;)
+ * @throws SQLException 
+ */
       public void ameliorationPhrase() throws SQLException {
             PreparedStatement recupPhrase;
             String select = "select *  from PHRASE_NB";
@@ -49,6 +53,11 @@ public class CompareAlgo {
             recupPhrase.close();
       }
 
+      /**
+       * Va servir à comparer deux tables de phrase pour voir si les classifications sont les mêmes et donc connaître le 
+       * fameux F-score
+       * @throws SQLException 
+       */
       public void compareAlgoAvecHumain() throws SQLException {
             float noteRefPositif = 0;
             float noteATestPositifPositif = 0;
@@ -64,11 +73,11 @@ public class CompareAlgo {
             float noteATestNegatifNegatif = 0;
             PreparedStatement dbHumaine;
             PreparedStatement dbATest;
-            String select = "select * from PHRASE_NB";
+            String select = "select * from RPHRASE"; // Table de phrase noté par l'homme.
             dbHumaine = connexion.conn.prepareStatement(select);
             ResultSet phraseRecup;
             phraseRecup = dbHumaine.executeQuery();
-            String selectTest = "select * from PHRASE_NB_TEST where ID_PHRASE =?";
+            String selectTest = "select * from PHRASE_NB_TEST where ID_PHRASE =?"; // Table de phrase noté par l'algo.
             dbATest = connexion.conn.prepareStatement(selectTest);
             ResultSet phraseTestRecup;
             while (phraseRecup.next()) {

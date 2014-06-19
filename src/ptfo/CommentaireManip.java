@@ -82,7 +82,7 @@ public class CommentaireManip {
                                     total += rate;
                                     phrase = phrase.replaceAll("'", "''");
                                     PreparedStatement lanceRequete4_0;
-                                    String selectMaxID = "select max(ID_PHRASE) from PHRASE_2";
+                                    String selectMaxID = "select max(ID_PHRASE) from PHRASE_DEMO";
                                     lanceRequete4_0 = conn.prepareStatement(selectMaxID);
                                     ResultSet requete4_0;
                                     requete4_0 = lanceRequete4_0.executeQuery();
@@ -91,7 +91,7 @@ public class CommentaireManip {
                                     lanceRequete4_0.close();
                                     requete4_0.close();
                                     PreparedStatement lanceRequete4;
-                                    String insert = "insert into PHRASE_2 values(?,?,?,?)";
+                                    String insert = "insert into PHRASE_DEMO values(?,?,?,?)";
                                     lanceRequete4 = conn.prepareStatement(insert);
                                     lanceRequete4.setInt(1, id);
                                     lanceRequete4.setString(2, phrase);
