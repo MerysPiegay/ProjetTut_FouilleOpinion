@@ -13,7 +13,7 @@ public class Learning {
         //on initialise la connection
         co = new Connection();
     }
-//cette methode permet de recupérer le lemme d'un mot dans notre table lexique
+//cette methode permet de recupérer le lemme d'un mot dans notre table lexique si c'est un nom, adjectif, verbe ou adverbe.
     public String lemme(String mot) throws SQLException {
         Statement lanceRequete1;
         lanceRequete1 = co.conn.createStatement();
@@ -46,26 +46,27 @@ public class Learning {
             //pour chaque ligne de la table, on va recuperer la phrase et la note qui lui a été donnée
             phrase = new Phrase(requete1.getString("PHRASE"));
             int classe = requete1.getInt("CLASSE");
-            //si une négation est détectée dans la phrase, on inverse cette note.
+            //si une négation est détectée dans la phrase, on inverse cette note
             if (phrase.detectNegation()) {
                 classe *= -1;
             }
-           
-           
-           
             for (int i = 0; i < phrase.mots.size(); i++) {
                 String mot = phrase.mots.get(i);
+                //pour chaque mot de chaque phrase, on récupère son lemme
                 String lemme = lemme(mot);
                 if (!lemme.equals("") && lemme.length() > 1) {
+                    //on passe le mot en minuscule
                     mot = lemme.toLowerCase();
                     System.out.println("apprentissage de : " + mot);
                     Statement lanceRequete2;
                     lanceRequete2 = co.conn.createStatement();
                     ResultSet requete2;
+                    //on récupère ensuite, si elle existe, la ligne correspondante au lemme obtenu précédemment 
                     requete2 = lanceRequete2.executeQuery("select * from " + baseOccMot + " where LEMME='" + mot + "'");
-
+                
                     String col = "";
                     int numcol = 0;
+                    //Ce switch permet de préparer le bonne attribut à incrémenter en fonction de la classe de la phrase
                     switch (classe) {
                         case 1:
                             col = "OCCUR_POS";
@@ -80,12 +81,13 @@ public class Learning {
                             numcol = 3;
                             break;
                     }
-
+                    //Si le lemme existe deja dans notre table de mots, on va uniquement mettre à jour la bonne colonne
                     if (requete2.next()) {
                         Statement lanceRequete3;
                         lanceRequete3 = co.conn.createStatement();
                         lanceRequete3.executeUpdate("update " + baseOccMot + " set " + col + "=" + col + "+1 where LEMME = '" + mot + "'");
                         lanceRequete3.close();
+                    //sinon, on va créer la ligne
                     } else {
                         Statement lanceRequete4;
                         lanceRequete4 = co.conn.createStatement();
