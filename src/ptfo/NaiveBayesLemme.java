@@ -10,105 +10,65 @@ import java.sql.SQLException;
 import java.sql.PreparedStatement; //necessaire aux interactions avec la BDD
 
 /**
+ * NaiveBayesLemme classe des opinions suivants leurs connotations.
+ *
+ * Cette classe a besoin d'une base d'apprentissage afin de produire des
+ * resultats pertinents. Elle classe ensuite des phrase de commentaire dans
+ * trois catégories : Positif/Neutre/Negatif
  *
  * @author Cyril
  */
 public class NaiveBayesLemme {
 
-    float commPositif, commNegatif, commTotal, commNeutre;
-    float note;
-    float occPositif, occTotal, occNegatif, occNeutre;
+    /**
+     * commPositif, commNegatif, commTotal, commNeutre represente le nombre de
+     * commentaire de chaque classe, ainsi que le total. Ces variables sont
+     * incrémentées lors des apprentissages (premierApprentissageMots() et
+     * miseAJourPhrase(ptfo.Phrase, int)). L'incrementation se fait grace a la
+     * fonction miseAjourNbrComm()
+     *
+     * @see NaiveBayesLemme#miseAjourNbrComm(int)
+     * @see NaiveBayesLemme#premierApprentissageMots()
+     * @see NaiveBayesLemme#miseAJourPhrase(ptfo.Phrase, int)
+     *
+     *
+     * occPositif, occTotal, occNegatif, occNeutre sont le nombre d'occurence
+     * d'un mot dans les diverses classes Elle sont recuperées dans la table
+     * MOTNBLM dans la fonction recupereNbrOccur (). Elles servent au calcule de
+     * la note Naïve Bayesienne
+     *
+     * @see NaiveBayesLemme#recupereNbrOccur(java.lang.String)
+     * @see NaiveBayesLemme#calculNoteNBNegatif(ptfo.Phrase)
+     * @see NaiveBayesLemme#calculNoteNBNeutre(ptfo.Phrase)
+     * @see NaiveBayesLemme#calculNoteNBPositif(ptfo.Phrase)
+     */
+    double commPositif, commNegatif, commTotal, commNeutre;
+    double note;
+    double occPositif, occTotal, occNegatif, occNeutre;
     Connection co1;
 
+    /**
+     * Initialisation de l'objet
+     *
+     * @throws SQLException si il y a un probleme avec la BDD
+     */
     NaiveBayesLemme() throws SQLException {
-        commPositif = 504;
-                commNegatif = 361;
-                commTotal = 1266;
-                commNeutre = 277;
+        commPositif = 0;
+        commNegatif = 0;
+        commTotal = 0;
+        commNeutre = 0;
         co1 = new Connection();
     }
 
-    /* public void recupereNbrComm() throws SQLException { //creer la TABLE PHRASE_NBKM
-        
-     PreparedStatement lanceRequete1;
-     PreparedStatement lanceRequeteTotal;
-     String selectCount;
-     selectCount = "select distinct count  (PHRASE) from PHRASE_NB where CLASSE =?";
-     String selectCountTotal = "select distinct count  (PHRASE) from PHRASE_NB";
-     lanceRequete1 = co1.conn.prepareStatement(selectCount);
-     lanceRequeteTotal = co1.conn.prepareStatement(selectCountTotal);
-     ResultSet requete1;
-     ResultSet requeteTotal;
-        
-     PreparedStatement lanceRequeteNew;
-     PreparedStatement lanceRequeteTotalNew;
-     String selectCountNew = "select count(PHRASE) from PHRASE_NB where CLASSE >=?";
-     String selectCountTotalNew = "select count(PHRASE) from PHRASE_NB";
-     lanceRequeteNew = co1.conn.prepareStatement(selectCountNew);
-     lanceRequeteTotalNew = co1.conn.prepareStatement(selectCountTotalNew);
-     ResultSet requeteNew;
-     ResultSet requeteTotalNew;
-
-     //récupération des CT et CP.
-     lanceRequete1.setInt(1, 1);
-     requete1 = lanceRequete1.executeQuery();
-     requete1.next();
-        
-     lanceRequeteNew.setInt(1, 1);
-     requeteNew = lanceRequeteNew.executeQuery();
-     requeteNew.next();
-        
-     commPositif = requete1.getInt(1) + requeteNew.getInt(1);
-     requete1.close(); 
-     System.out.println(commPositif +'\n');
-     requeteNew.close();
-        
-        
-        
-        
-        
-     lanceRequete1.setInt(1, -1);
-     requete1 = lanceRequete1.executeQuery();
-     requete1.next();        
-        
-     lanceRequeteNew.setInt(1, -1);
-     requeteNew = lanceRequeteNew.executeQuery();
-     requeteNew.next();
-        
-     commNegatif = requete1.getInt(1) /*+ requeteNew.getInt(1);
-     requete1.close();
-     requeteNew.close();
-        
-        
-     lanceRequete1.setInt(1, 0);
-     requete1 = lanceRequete1.executeQuery();
-     requete1.next();
-     lanceRequeteNew.setInt(1, 0);
-     requeteNew = lanceRequeteNew.executeQuery();
-     requeteNew.next();
-     commNeutre = requete1.getInt(1) + requeteNew.getInt(1);       
-     requete1.close();
-     requeteNew.close();
-        
-        
-     requeteTotal = lanceRequeteTotal.executeQuery();
-     requeteTotal.next();
-     requeteTotalNew = lanceRequeteTotalNew.executeQuery();
-     requeteTotalNew.next();
-     commTotal = requeteTotal.getInt(1) + requeteTotalNew.getInt(1);
-     requeteTotal.close();
-     lanceRequete1.close();
-     lanceRequeteTotal.close();
-     requeteTotalNew.close();
-     lanceRequeteNew.close();
-     lanceRequeteTotalNew.close();
-     }*/
     /**
-     * Récupère le nombre d'occurence pour chaque mot de la phrase et en fait
-     * l'addition
+     * Recupere les nombres d'occurence pour un mot
      *
-     * @param s
-     * @throws SQLException
+     * @param s recupere le mot souhaité
+     * @throws SQLException si il y a un probleme avec la BDD
+     * @see NaiveBayesLemme#occNegatif
+     * @see NaiveBayesLemme#occNeutre
+     * @see NaiveBayesLemme#occPositif
+     * @see NaiveBayesLemme#occTotal
      */
     public void recupereNbrOccur(String s) throws SQLException {
         PreparedStatement lanceRequeteOccur;
@@ -123,22 +83,26 @@ public class NaiveBayesLemme {
 
         requeteOccur = lanceRequeteOccur.executeQuery();
         if (requeteOccur.next()) {
-            occPositif = (float) requeteOccur.getInt("OCCUR_POSITIF");
-            occNegatif = (float) requeteOccur.getInt("OCCUR_NEGATIF");
-            occNeutre = (float) requeteOccur.getInt("OCCUR_NEUTRE");
-            occTotal = (float) requeteOccur.getInt("OCCUR_TOTAL");
+            occPositif = (double) requeteOccur.getInt("OCCUR_POSITIF");
+            occNegatif = (double) requeteOccur.getInt("OCCUR_NEGATIF");
+            occNeutre = (double) requeteOccur.getInt("OCCUR_NEUTRE");
+            occTotal = (double) requeteOccur.getInt("OCCUR_TOTAL");
         }
         requeteOccur.close();
         lanceRequeteOccur.close();
     }
 
     /**
-     * Récupère le nombre d'occurence pour chaque mot de la phrase et en fait
-     * l'addition
+     * Nourrit la table MOTNBLM a partir d'une phrase et da sa classe passé en
+     * parametre. Elle tranforme les mots de la phrase en lemme avant de les
+     * stocker dans la base. Elle est appelée dans premierApprentissageMots() et
+     * a la fin de miseAJourPhrase(ptfo.Phrase, int).
      *
+     * @see NaiveBayesLemme#premierApprentissageMots()
+     * @see NaiveBayesLemme#miseAJourPhrase(ptfo.Phrase, int)
      * @param phraseNB
-     * @param classePhrase
-     * @throws SQLException
+     * @param classePhrase classe de la phrase ( positif/neutre/negatif)
+     * @throws SQLException si il y a un probleme avec la BDD
      */
     public void apprentissageMots(Phrase phraseNB, int classePhrase) throws SQLException {
 
@@ -155,7 +119,7 @@ public class NaiveBayesLemme {
                 Phrase lemmeDejaFait;
                 s = s.toLowerCase();
                 lemmeDejaFait = new Phrase("");
-
+                System.out.println(s);
                 String lemme = ""; //Recuperation du lemme
                 PreparedStatement lanceRequeteLemme;
                 String selectLemme = "select LEMME from LEXIQUE where MOT = ? and FREQLEMFILM = (select Max(FREQLEMFILM) from LEXIQUE where MOT = ?)";
@@ -184,6 +148,7 @@ public class NaiveBayesLemme {
                                 ajoutMot.setInt(3, 0);
                                 ajoutMot.setInt(4, 1);
                                 ajoutMot.setInt(5, 0);
+                                System.out.println("negatif");
                                 break;
                             case 0:
                                 ajoutMot.setInt(1, ID);
@@ -191,6 +156,7 @@ public class NaiveBayesLemme {
                                 ajoutMot.setInt(3, 0);
                                 ajoutMot.setInt(4, 0);
                                 ajoutMot.setInt(5, 1);
+                                System.out.println("nzutre");
                                 break;
                             case 1:
                                 ajoutMot.setInt(1, ID);
@@ -198,6 +164,7 @@ public class NaiveBayesLemme {
                                 ajoutMot.setInt(3, 1);
                                 ajoutMot.setInt(4, 0);
                                 ajoutMot.setInt(5, 0);
+                                System.out.println("positif");
                                 break;
                             default:
                                 System.out.println("Problème dans le insert / switch de apprentissageMots() ");
@@ -217,18 +184,21 @@ public class NaiveBayesLemme {
                                     insertMot.setInt(2, 0);
                                     insertMot.setInt(3, 0);
                                     insertMot.setString(4, s);
+                                    System.out.println("negatif");
                                     break;
                                 case 0:
                                     insertMot.setInt(1, 0);
                                     insertMot.setInt(2, 1);
                                     insertMot.setInt(3, 0);
                                     insertMot.setString(4, s);
+                                    System.out.println("neutre");
                                     break;
                                 case 1:
                                     insertMot.setInt(1, 0);
                                     insertMot.setInt(2, 0);
                                     insertMot.setInt(3, 1);
                                     insertMot.setString(4, s);
+                                    System.out.println("positif");
                                     break;
                                 default:
                                     System.out.println("Problème dans le update / switch de apprentissageMots() ");
@@ -267,6 +237,7 @@ public class NaiveBayesLemme {
                                 ajoutMot.setInt(3, 0);
                                 ajoutMot.setInt(4, 1);
                                 ajoutMot.setInt(5, 0);
+                                System.out.println("negatif");
                                 break;
                             case 0:
                                 ajoutMot.setInt(1, ID);
@@ -274,6 +245,7 @@ public class NaiveBayesLemme {
                                 ajoutMot.setInt(3, 0);
                                 ajoutMot.setInt(4, 0);
                                 ajoutMot.setInt(5, 1);
+                                System.out.println("neutre");
                                 break;
                             case 1:
                                 ajoutMot.setInt(1, ID);
@@ -281,6 +253,7 @@ public class NaiveBayesLemme {
                                 ajoutMot.setInt(3, 1);
                                 ajoutMot.setInt(4, 0);
                                 ajoutMot.setInt(5, 0);
+                                System.out.println("positif");
                                 break;
                             default:
                                 System.out.println("Problème dans le insert / switch de apprentissageMots() ");
@@ -290,7 +263,7 @@ public class NaiveBayesLemme {
                         lemmeDejaFait.mots.add(lemme);
                         ajoutMot.close();
                     } else { // si il est dans la liste
-                        if (!lemmeDejaFait.mots.contains(lemme)) {//bisar
+                        if (!lemmeDejaFait.mots.contains(lemme)) {
                             PreparedStatement insertMot;
                             String insert = "update MOTSNBLM set OCCUR_TOTAL = OCCUR_TOTAL+1, OCCUR_NEGATIF = OCCUR_NEGATIF+?,OCCUR_NEUTRE = OCCUR_NEUTRE +?, OCCUR_POSITIF =OCCUR_POSITIF+? where MOTS=?";
                             insertMot = co1.conn.prepareStatement(insert);
@@ -300,18 +273,21 @@ public class NaiveBayesLemme {
                                     insertMot.setInt(2, 0);
                                     insertMot.setInt(3, 0);
                                     insertMot.setString(4, lemme);
+                                    System.out.println("negatif");
                                     break;
                                 case 0:
                                     insertMot.setInt(1, 0);
                                     insertMot.setInt(2, 1);
                                     insertMot.setInt(3, 0);
                                     insertMot.setString(4, lemme);
+                                    System.out.println("neutre");
                                     break;
                                 case 1:
                                     insertMot.setInt(1, 0);
                                     insertMot.setInt(2, 0);
                                     insertMot.setInt(3, 1);
                                     insertMot.setString(4, lemme);
+                                    System.out.println("positif");
                                     break;
                                 default:
                                     System.out.println("Problème dans le update / switch de apprentissageMots() ");
@@ -329,7 +305,6 @@ public class NaiveBayesLemme {
                     requeteID.close();
                     lanceRequeteID.close();
 
-                    //
                 }
                 lanceRequeteLemme.close();
                 requeteLemme.close();
@@ -338,20 +313,24 @@ public class NaiveBayesLemme {
     }
 
     /**
-     * Va permettre de noter la première fois tous les mots
+     * Va permettre de noter la première fois tous les mots pour nourrir la
+     * table MOTNBLM
      *
-     * @throws SQLException
+     * @throws SQLException si il y a un probleme avec la BDD
      */
     public void premierApprentissageMots() throws SQLException {
         PreparedStatement lanceRequetePhrase;
-        String selectPhrase = "select * from PHRASE_DEMO";
+        String selectPhrase = "select * from RPHRASE"; //Table d'apprentissage
         lanceRequetePhrase = co1.conn.prepareStatement(selectPhrase);
         ResultSet requetePhrase;
+
         requetePhrase = lanceRequetePhrase.executeQuery();
         while (requetePhrase.next()) {
             Phrase phrase;
             phrase = new Phrase(requetePhrase.getString("PHRASE"));
             int classePhrase = requetePhrase.getInt("CLASSE");
+            System.out.println(phrase);
+            System.out.println(classePhrase);
             apprentissageMots(phrase, classePhrase);
             miseAjourNbrComm(classePhrase);
         }
@@ -360,101 +339,118 @@ public class NaiveBayesLemme {
     }
 
     /**
-     * Va calculer la fameuse note NB positive
+     * Va calculer la fameuse note NB positive pour miseAJourPhrase(ptfo.Phrase,
+     * int)
      *
      * @param phrase
-     * @return
-     * @throws SQLException
+     * @return noteNB
+     * @see NaiveBayesLemme#miseAJourPhrase(ptfo.Phrase, int)
+     * @throws SQLException si il y a un probleme avec la BDD
      */
-      public float calculNoteNBPositif(Phrase phrase) throws SQLException {
-            float noteNB = 1;
-            //boolean passage = false;
-            for (String s : phrase.mots) {
-                  s = s.toLowerCase();
-                  recupereNbrOccur(s);
-                  if (occPositif != 0) {
-                        //passage = true;
-                        System.out.println(s);
-                        noteNB *= (occPositif / commPositif);
-                        System.out.println("nbr NB POSITIF Temp : " + noteNB);
-                  } else {
-                        noteNB *= (1 / commPositif);
-                  }
+    public double calculNoteNBPositif(Phrase phrase) throws SQLException {
+        double noteNB = 1;
+        //boolean passage = false;
+        for (String s : phrase.mots) {
+            s = s.toLowerCase();
+            recupereNbrOccur(s);
+            if (occPositif != 0) {
+                //passage = true;
+                System.out.println(s);
+                noteNB *= (occPositif / commPositif) * 10;
+                System.out.println("nbr NB POSITIF Temp : " + noteNB);
+            } else {
+                noteNB *= (1 / commPositif) * 10;
             }
-            //if (passage) {
-            noteNB *= commPositif / commTotal;
-            System.out.println("\t\tNombre NB POSITIF : " + noteNB);
-           // } else {
-            //    noteNB = 0;
-            // }
-            return noteNB;
-      }
-
-      /**
-       * Va calculer la version NB négative
-       *
-       * @param phrase
-       * @return
-       * @throws SQLException
-       */
-      public float calculNoteNBNegatif(Phrase phrase) throws SQLException {
-            float noteNB = 1;
-            //boolean passage = false;
-            for (String s : phrase.mots) {
-                  s = s.toLowerCase();
-                  recupereNbrOccur(s);
-                  if (occNegatif != 0) {
-                        //         passage = true;
-                        System.out.println(s);
-                        noteNB *= (occNegatif / commNegatif);
-                        System.out.println("nbr NB NEGATIF Temp : " + noteNB);
-                  } else {
-                        noteNB *= (1 / commNegatif);
-                  }
-            }
-            //if (passage) {
-            noteNB *= commNegatif / commTotal;
-            System.out.println("\t\tNombre NB NEGATIF : " + noteNB);
-           // } else {
-            //      noteNB = 0;
-            // }
-            return noteNB;
-      }
-
-      public float calculNoteNBNeutre(Phrase phrase) throws SQLException {
-            float noteNB = 1;
-            //boolean passage = false;
-            for (String s : phrase.mots) {
-                  s = s.toLowerCase();
-                  recupereNbrOccur(s);
-                  if (occNeutre != 0) {
-                        //       passage = true;
-                        System.out.println(s);
-                        noteNB *= (occNeutre / commNeutre);
-                        System.out.println("nbr NB NEUTRE Temp : " + noteNB);
-                  } else {
-                        noteNB *= (1 / commNeutre);
-                  }
-            }
-            //if (passage) {
-            noteNB *= commNeutre / commTotal;
-            System.out.println("\t\tNombre NB NEUTRE : " + noteNB);
-            //}else noteNB = 0;
-
-            return noteNB;
-      }
+        }
+        //if (passage) {
+        noteNB *= commPositif / commTotal;
+        System.out.println("\t\tNombre NB POSITIF : " + noteNB);
+        // } else {
+        //    noteNB = 0;
+        // }
+        return noteNB;
+    }
 
     /**
-     * Mise à jou de toute une phrase avec mise à jour des mots dedans et update
-     * de la table phrase.
+     * Va calculer la note NB négative pour miseAJourPhrase(ptfo.Phrase, int)
+     *
+     * @param phrase
+     * @return noteNB
+     * @see NaiveBayesLemme#miseAJourPhrase(ptfo.Phrase, int)
+     * @throws SQLException si il y a un probleme avec la BDD
+     */
+    public double calculNoteNBNegatif(Phrase phrase) throws SQLException {
+        double noteNB = 1;
+        //boolean passage = false;
+        for (String s : phrase.mots) {
+            s = s.toLowerCase();
+            recupereNbrOccur(s);
+            if (occNegatif != 0) {
+                //         passage = true;
+
+                noteNB *= (occNegatif / commNegatif) * 10;
+                System.out.println("nbr NB NEGATIF Temp : " + noteNB);
+            } else {
+                noteNB *= (1 / commNegatif) * 10;
+            }
+            System.out.println(s);
+            System.out.println(noteNB);
+        }
+        //if (passage) {
+        noteNB *= commNegatif / commTotal;
+        System.out.println("\t\tNombre NB NEGATIF : " + noteNB);
+        // } else {
+        //      noteNB = 0;
+        // }
+        return noteNB;
+    }
+
+    /**
+     * Calcule la note NB du neutre pour miseAJourPhrase(ptfo.Phrase, int)
+     *
+     * @param phrase
+     * @return noteNB
+     * @see NaiveBayesLemme#miseAJourPhrase(ptfo.Phrase, int)
+     * @throws SQLException si il y a un probleme avec la BDD
+     */
+    public double calculNoteNBNeutre(Phrase phrase) throws SQLException {
+        double noteNB = 1;
+        //boolean passage = false;
+        for (String s : phrase.mots) {
+            s = s.toLowerCase();
+            recupereNbrOccur(s);
+            if (occNeutre != 0) {
+                //       passage = true;
+                System.out.println(s);
+                noteNB *= (occNeutre / commNeutre) * 10;
+                System.out.println("nbr NB NEUTRE Temp : " + noteNB);
+            } else {
+                noteNB *= (1 / commNeutre) * 10;
+            }
+        }
+        //if (passage) {
+        noteNB *= commNeutre / commTotal;
+        System.out.println("\t\tNombre NB NEUTRE : " + noteNB);
+        //}else noteNB = 0;
+
+        return noteNB;
+    }
+
+    /**
+     * Prend en parametre une phrase pour la noter et la ranger dans la table
+     * PHRASE_NBLM
+     * La phrase est au préalable lemmatisé pour la notation.
      *
      * @param phrase
      * @param id
-     * @throws SQLException
+     * @see NaiveBayesLemme#calculNoteNBNegatif(ptfo.Phrase) 
+     * @see NaiveBayesLemme#calculNoteNBNeutre(ptfo.Phrase) 
+     * @see NaiveBayesLemme#calculNoteNBPositif(ptfo.Phrase) 
+     * @throws SQLException si il y a un probleme avec la BDD
      */
     public void miseAJourPhrase(Phrase phrase, int id) throws SQLException { // a revoir 
       /*  -------------------
-         |  A CONSERVER /!\  |
+         |  LEMMATISATION /!\  |
          -------------------
          */
         Phrase phraseDeLemme;
@@ -480,28 +476,17 @@ public class NaiveBayesLemme {
 
         }
 
-        /*  ----------------------------------------------
-         | Utiliser la phrase de lemme pour les noatations |
-         -------------------------------------------------
+        /*  --------------------------------------------------
+         | Utilisation la phrase de lemme pour les noatations |
+         -----------------------------------------------------
          */
         int classe;
 
-        //PreparedStatement lanceRequeteID;
-        //String selectMaxID = "select max(ID_PHRASE) from PHRASE_NB_TEST";
-        //lanceRequeteID = co1.conn.prepareStatement(selectMaxID);
-        //ResultSet requeteID;
-        //requeteID = lanceRequeteID.executeQuery();
-        //requeteID.next();
-        //int ID = requeteID.getInt(1) + 1;
-        float noteNbPos = calculNoteNBPositif(phraseDeLemme);
-        float noteNbNeg = calculNoteNBNegatif(phraseDeLemme);
-        float noteNbNeutre = calculNoteNBNeutre(phraseDeLemme);
-        /*if (noteNbPos == noteNbNeg){
-         if (noteNbPos == noteNbNeutre){
-         classe = 9;
-         System.out.println("\n\n\t\t\t\t TOTALEMENT INDETERMINE \n\n\n");
-         }
-         }*/
+
+        double noteNbPos = calculNoteNBPositif(phraseDeLemme);
+        double noteNbNeg = calculNoteNBNegatif(phraseDeLemme);
+        double noteNbNeutre = calculNoteNBNeutre(phraseDeLemme);
+
         if (noteNbPos > noteNbNeg) {
             if (noteNbPos > noteNbNeutre) {
                 classe = 1;
@@ -525,8 +510,8 @@ public class NaiveBayesLemme {
         maj.setInt(1, id);
         maj.setString(2, phrase.phrase);
         maj.setInt(3, classe);
-        maj.setFloat(4, noteNbPos);
-        maj.setFloat(5, noteNbNeg);
+        maj.setDouble(4, noteNbPos);
+        maj.setDouble(5, noteNbNeg);
         maj.executeUpdate();
         maj.close();
         System.out.println(phraseDeLemme.phrase);
@@ -534,6 +519,13 @@ public class NaiveBayesLemme {
         miseAjourNbrComm(classe);
     }
 
+    /**
+     * A chaque apprendtissage, met a jour le nombre de commentaire.
+     * 
+     * @see NaiveBayesLemme#premierApprentissageMots()
+     * @see NaiveBayesLemme#miseAJourPhrase(ptfo.Phrase, int)
+     * @param classe 
+     */
     public void miseAjourNbrComm(int classe) {
         if (classe == 1) {
             commPositif++;
@@ -547,34 +539,18 @@ public class NaiveBayesLemme {
         commTotal++;
     }
 
-    /**
-     * Va noter tout un commentaire rentré en argument
-     *
-     * @param comment
-     * @throws SQLException
-     */
-    /*
-     public void notationCommentaire(Commentaire comment) throws SQLException {
-     note = 0;
-     Statement lanceRequetePhrase;
-     lanceRequetePhrase = co1.conn.createStatement();
 
-     for (String s : comment.phrases) {
-     Phrase phrase = new Phrase(s);
-     miseAJourPhrase(phrase);
-     }
-
-     lanceRequetePhrase.close();
-     }*/
     /**
-     * @param args the command line arguments
-     * @throws java.sql.SQLException
+     * Va nourrir la table MOTNBLM dans un premier temps avec la fonction
+     * premierApprentissageMots()
+     * Puis va noter des commentaires grace a miseAJourPhrase.
+     * 
+     * @see NaiveBayesLemme#premierApprentissageMots()
+     * @see NaiveBayesLemme#miseAJourPhrase(ptfo.Phrase, int)
+     * @param args
+     * @throws SQLException 
+     * 
      */
-    /**
-     * @param args the command line arguments
-     * @throws java.sql.SQLException
-     */
-    // fin insertion brut
     public static void main(String[] args) throws SQLException {
 
         NaiveBayesLemme nb;
@@ -582,7 +558,7 @@ public class NaiveBayesLemme {
         nb.premierApprentissageMots();
 
         PreparedStatement lanceRequeteTest;
-        String selectPhrase = "select * from PHRASE_NB";
+        String selectPhrase = "select * from PHRASE_NB"; //Table a noter
         lanceRequeteTest = nb.co1.conn.prepareStatement(selectPhrase);
         ResultSet requeteTest;
         requeteTest = lanceRequeteTest.executeQuery();
@@ -593,44 +569,10 @@ public class NaiveBayesLemme {
             int idPhrase = requeteTest.getInt("ID_PHRASE");
             System.out.println(phraseDeTest);
             nb.miseAJourPhrase(phraseDeTest, idPhrase);
-            //phraseDeTest = new Phrase("Ce pneu nul ");
-            //int idPhrase = 2;
 
         }
         requeteTest.close();
         lanceRequeteTest.close();
 
-        /*      ****   Z0N3 51    ****
-                
-         NaiveBayesLemme nbln;
-         nbln = new NaiveBayesLemme();
-         Phrase lemmeDejaFait;
-         lemmeDejaFait = new Phrase("");
-         String lemme = "";
-         PreparedStatement lanceRequeteLemme;
-         String selectLemme = "select LEMME from LEXIQUE where MOT = ? and FREQLEMFILM = (select Max(FREQLEMFILM) from LEXIQUE where MOT = ?)";
-         lanceRequeteLemme = nbln.co1.conn.prepareStatement(selectLemme);
-         lanceRequeteLemme.setString(1, "non");
-         lanceRequeteLemme.setString(2, "non");
-         ResultSet requeteLemme;
-         requeteLemme = lanceRequeteLemme.executeQuery();
-         if(!requeteLemme.next()){
-         System.out.print("le lemme n'existe pas");
-         }
-         else{
-         lemme = requeteLemme.getNString(1);
-         System.out.println(lemme);
-         }
-        
-         requeteLemme.close();
-         lanceRequeteLemme.close();
-         
-         nbln.recupereNbrComm();
-         System.out.println(nbln.commPositif +'\n');
-         System.out.println(nbln.commNegatif +'\n');
-         System.out.println(nbln.commTotal +'\n');
-         System.out.println(nbln.commNeutre );
-         
-         */
     }
 }
