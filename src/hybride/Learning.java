@@ -1,24 +1,19 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+voici la classe qui permet l'apprentissage
  */
 package hybride;
 
 import java.sql.*;
 
-/**
- *
- * @author eyepop
- */
 public class Learning {
 
     Connection co;
 
     Learning() throws SQLException {
+        //on initialise la connection
         co = new Connection();
     }
-
+//cette methode permet de recupérer le lemme d'un mot dans notre table lexique
     public String lemme(String mot) throws SQLException {
         Statement lanceRequete1;
         lanceRequete1 = co.conn.createStatement();
@@ -36,19 +31,28 @@ public class Learning {
         requete1.close();
         return lemme;
     }
-
+    /*
+    voici la méthode d'apprentissage elle prend en argument le nom de la table de phrases découpées et 
+    notés ainsi que la table ou sont stocké les mots et leurs occurrences dans chaques classes.
+    */
     public void apprendre(String baseComNote, String baseOccMot) throws SQLException {
         Statement lanceRequete1;
         lanceRequete1 = co.conn.createStatement();
         ResultSet requete1;
+        //on recupère toutes les lignes de notre table
         requete1 = lanceRequete1.executeQuery("select * from " + baseComNote);
         while (requete1.next()) {
             Phrase phrase;
+            //pour chaque ligne de la table, on va recuperer la phrase et la note qui lui a été donnée
             phrase = new Phrase(requete1.getString("PHRASE"));
             int classe = requete1.getInt("CLASSE");
+            //si une négation est détectée dans la phrase, on inverse cette note.
             if (phrase.detectNegation()) {
                 classe *= -1;
             }
+           
+           
+           
             for (int i = 0; i < phrase.mots.size(); i++) {
                 String mot = phrase.mots.get(i);
                 String lemme = lemme(mot);
