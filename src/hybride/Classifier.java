@@ -1,17 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package hybride;
 
 import static java.lang.System.exit;
 import java.sql.*;
 
-/**
- *
- * @author eyepop
- */
+
 public class Classifier {
 
     Connection co;
@@ -19,7 +11,7 @@ public class Classifier {
     Classifier() throws SQLException {
         co = new Connection();
     }
-
+    //même fonction que dans Learning.java (voir si y a pas moyen de créer une classe pour éviter des redondances de code)
     public String lemme(String mot) throws SQLException {
         Statement lanceRequete1;
         lanceRequete1 = co.conn.createStatement();
@@ -37,7 +29,12 @@ public class Classifier {
         requete1.close();
         return lemme;
     }
-
+    /*permet de classifier une table entière. 
+    prend en argument 
+    le nom de la table à noter, 
+    le nom de la table dans laquelle les phrases notées seront stockées 
+    et le nom de la table contenant les mots appris grace à la classe Learning 
+    */
     public void classifierBase(String baseComBase, String baseComTest, String baseMotsNote) throws SQLException {
         Statement lanceRequete;
         lanceRequete = co.conn.createStatement();
@@ -49,7 +46,14 @@ public class Classifier {
         lanceRequete.close();
         requete.close();
     }
-
+    /*permet de classifier un objet Phrase. 
+    prend en argument 
+    l'objet Phrase à noter, 
+    l'id de la phrase à noter,
+    le nom de la table contenant les mots appris grace à la classe Learning , 
+    le nom de la table à noter 
+    et le nom de la table dans laquelle les phrases notées seront stockées
+    */
     public void classifier(Phrase phrase, int id, String baseMotsNote, String baseComBase, String baseComTest) throws SQLException {
         double comPos, comNeu, comNeg, comTot;
         Statement lanceRequete;
